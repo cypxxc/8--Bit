@@ -2,13 +2,12 @@
 
 import React, { useState } from "react";
 import { sound } from "@/lib/sound";
-import { SHOP_CONFIG } from "@/lib/config";
 import LineModal from "./LineModal";
 import TiltCard from "@/components/motion/TiltCard";
 import { triggerRetroConfetti } from "@/components/motion/ConfettiTrigger";
 import { PixelGpu } from "@/components/PixelIcons";
-import { motion, AnimatePresence } from "motion/react";
-import { Cpu, HardDrive, Fan, Zap, Copy, Check, Sparkles, MessageCircle } from "lucide-react";
+import { motion } from "motion/react";
+import { Cpu, HardDrive, Fan, Zap, Copy, Check, MessageCircle } from "lucide-react";
 
 interface ComponentOption {
   id: string;

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { sound } from "@/lib/sound";
 import { motion, AnimatePresence } from "motion/react";
 import { Zap } from "lucide-react";
@@ -16,42 +16,31 @@ export default function BiosBootScreen({
   forceShow = false,
   onClose,
 }: BiosBootScreenProps) {
-  const [visible, setVisible] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+  const [prevForceShow, setPrevForceShow] = useState(forceShow);
   const [lines, setLines] = useState<string[]>([]);
   const [ramCount, setRamCount] = useState(0);
   const [readyToStart, setReadyToStart] = useState(false);
+
+  if (forceShow !== prevForceShow) {
+    setPrevForceShow(forceShow);
+    setDismissed(false);
+  }
+
+  const visible = forceShow && !dismissed;
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const ramTimerRef = useRef<NodeJS.Timeout | null>(null);
   const finishTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const clearAllTimers = () => {
+  const clearAllTimers = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     if (ramTimerRef.current) clearInterval(ramTimerRef.current);
     if (finishTimeoutRef.current) clearTimeout(finishTimeoutRef.current);
-  };
+  }, []);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    if (forceShow) {
-      setVisible(true);
-      startBootSequence();
-    } else {
-      setVisible(false);
-      clearAllTimers();
-    }
-
-    return () => {
-      clearAllTimers();
-    };
-  }, [forceShow]);
-
-  const startBootSequence = () => {
+  const startBootSequence = useCallback(() => {
     clearAllTimers();
-    setLines([]);
-    setRamCount(0);
-    setReadyToStart(false);
 
     const bootLogs = [
       "8-BIT ENERGY V2.4 BIOS (C) 2026 CYBER WORKSHOP CO., LTD.",
@@ -62,7 +51,12 @@ export default function BiosBootScreen({
     ];
 
     let step = 0;
-    timerRef.current = setInterval(() => {
+    finishTimeoutRef.current = setTimeout(() => {
+      setLines([]);
+      setRamCount(0);
+      setReadyToStart(false);
+
+      timerRef.current = setInterval(() => {
       if (step < bootLogs.length) {
         const currentLine = bootLogs[step];
         if (currentLine) {
@@ -103,29 +97,43 @@ export default function BiosBootScreen({
         }, 50);
       }
     }, 160);
-  };
+  }, 0);
+}, [clearAllTimers]);
 
-  const handleStart = () => {
+  const handleStart = useCallback(() => {
     sound.playVictory();
     clearAllTimers();
     if (typeof window !== "undefined") {
       sessionStorage.setItem("8bit_has_booted", "true");
     }
-    setVisible(false);
+    setDismissed(true);
     onClose?.();
     onComplete?.();
-  };
+  }, [clearAllTimers, onClose, onComplete]);
 
-  const handleSkip = () => {
+  const handleSkip = useCallback(() => {
     sound.playSelect();
     clearAllTimers();
     if (typeof window !== "undefined") {
       sessionStorage.setItem("8bit_has_booted", "true");
     }
-    setVisible(false);
+    setDismissed(true);
     onClose?.();
     onComplete?.();
-  };
+  }, [clearAllTimers, onClose, onComplete]);
+
+  useEffect(() => {
+    if (!visible) {
+      clearAllTimers();
+      return;
+    }
+
+    startBootSequence();
+
+    return () => {
+      clearAllTimers();
+    };
+  }, [visible, clearAllTimers, startBootSequence]);
 
   // Listen to Enter or Space
   useEffect(() => {
@@ -142,7 +150,7 @@ export default function BiosBootScreen({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [visible, readyToStart]);
+  }, [visible, readyToStart, handleStart, handleSkip]);
 
   return (
     <AnimatePresence>

@@ -5,7 +5,7 @@ import { api } from "./api";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { sound } from "@/lib/sound";
-import { Lock, ShieldAlert, KeyRound, ArrowLeft, Terminal } from "lucide-react";
+import { ShieldAlert, KeyRound, ArrowLeft, Terminal } from "lucide-react";
 
 const subscribe = () => () => {};
 const clientReady = () => true;

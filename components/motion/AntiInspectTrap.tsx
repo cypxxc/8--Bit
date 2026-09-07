@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { sound } from "@/lib/sound";
 import { motion, AnimatePresence } from "motion/react";
-import { ShieldAlert, Terminal, X, Skull } from "lucide-react";
+import { ShieldAlert, X, Skull } from "lucide-react";
 import { SHOP_CONFIG } from "@/lib/config";
 
 const TROLL_MESSAGES = [
