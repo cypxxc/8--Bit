@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import BiosBootScreen from "@/components/motion/BiosBootScreen";
 import PixelCursorTrail from "@/components/motion/PixelCursorTrail";
 import SmoothPageScroll from "@/components/motion/SmoothPageScroll";
+import AntiInspectTrap from "@/components/motion/AntiInspectTrap";
 import { MotionConfig } from "motion/react";
 import Scanlines from "@/components/Scanlines";
 import NavbarHud from "@/components/NavbarHud";
@@ -25,6 +26,7 @@ export default function LandingPage({initialServices,initialError}: {initialServ
 
   return (
     <MotionConfig reducedMotion="user"><ServiceCatalog initialServices={initialServices} initialError={initialError}><div className="min-h-screen bg-[#090b10] text-[#e2e8f0] relative flex flex-col">
+      <AntiInspectTrap />
       <SmoothPageScroll paused={forceBootScreen} />
       <BiosBootScreen forceShow={forceBootScreen} onClose={() => setForceBootScreen(false)} />
       {particlesEnabled && <PixelCursorTrail />}
