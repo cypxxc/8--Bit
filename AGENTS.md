@@ -7,3 +7,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Preserve approved shop content
+
+Before editing the landing page, read `PRODUCT.md`, especially “Approved landing content”. Motion and styling work must preserve the shop's real service scope, catalog/API integration, chat-first pricing, PC/Notebook selection, and CRT-off default. Keep existing motion when restoring content. Never restore demo prices, reviews, repair claims, or fake successful submissions. Verify these behaviors after edits.
