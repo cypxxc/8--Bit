@@ -3,6 +3,7 @@ export interface Conversation {
   last_message_at:string|null; unread_count:number;
   preview?:string;
   intake_status?:string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   intake_data?:Record<string, any>;
 }
 export interface ChatMessage {

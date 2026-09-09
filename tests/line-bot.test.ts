@@ -4,7 +4,6 @@ import {
   evaluateBotTransition,
   buildLineReplyPayload,
   sendLineReply,
-  type IntakeStatus,
   type IntakeData,
 } from '../lib/line/bot';
 
