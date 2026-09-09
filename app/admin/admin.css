@@ -646,6 +646,53 @@
   cursor: pointer;
 }
 
+.line-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.line-filters .line-unread-filter {
+  margin-bottom: 0;
+}
+
+.line-room-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 2px;
+}
+
+/* Intake Status Badges in Room List */
+.line-intake-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-press-start), monospace;
+  font-size: 8px;
+  line-height: 1.2;
+  padding: 2px 5px;
+  border-radius: 0;
+  border: 1px solid;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.line-intake-badge.completed {
+  background: rgba(57, 255, 20, 0.12);
+  color: #39ff14;
+  border-color: #39ff14;
+  box-shadow: 0 0 4px rgba(57, 255, 20, 0.3);
+}
+
+.line-intake-badge.pending {
+  background: rgba(0, 240, 255, 0.1);
+  color: #00f0ff;
+  border-color: #00f0ff;
+}
+
 .line-room {
   display: flex;
   width: 100%;
@@ -717,6 +764,108 @@
   padding: 16px 20px;
   border-bottom: 3px solid #1e293b;
   background: #0c1322;
+}
+
+/* Retro 8-bit Intake Summary Card */
+.line-intake-card {
+  margin: 14px 20px 0 20px;
+  padding: 14px 16px;
+  background: #090e18;
+  border: 2px solid #00f0ff;
+  box-shadow: 3px 3px 0 #000, 0 0 12px rgba(0, 240, 255, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.line-intake-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px dashed #1e293b;
+  padding-bottom: 8px;
+}
+
+.line-intake-icon {
+  font-size: 16px;
+}
+
+.line-intake-card-head h4 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #00f0ff;
+  letter-spacing: 0.5px;
+  flex: 1;
+}
+
+.line-intake-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+}
+
+.line-intake-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.line-intake-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.line-intake-label {
+  font-family: var(--font-press-start), monospace;
+  font-size: 8px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.line-intake-value {
+  color: #f1f5f9;
+  font-size: 13px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.line-intake-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 6px;
+  border-top: 1px dashed #1e293b;
+  flex-wrap: wrap;
+}
+
+.line-intake-actions .line-intake-create-btn {
+  background: #064e3b;
+  color: #39ff14;
+  border-color: #39ff14;
+  box-shadow: 2px 2px 0 #000;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.line-intake-actions .line-intake-create-btn:hover {
+  background: #047857;
+  color: #ffffff;
+  border-color: #34d399;
+}
+
+.line-intake-actions .line-intake-reset-btn {
+  background: #1e293b;
+  color: #cbd5e1;
+  border-color: #475569;
+  font-size: 12px;
+}
+
+.line-intake-actions .line-intake-reset-btn:hover:not(:disabled) {
+  background: #334155;
+  color: #f87171;
+  border-color: #ef4444;
 }
 
 .line-messages {
@@ -819,5 +968,12 @@
   }
   .line-inbox.has-selection .line-rooms {
     display: none;
+  }
+  .line-intake-card {
+    margin: 10px 12px 0 12px;
+    padding: 10px 12px;
+  }
+  .line-intake-grid {
+    grid-template-columns: 1fr;
   }
 }
