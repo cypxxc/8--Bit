@@ -1,0 +1,167 @@
+export type IntakeStatus = 'new' | 'awaiting_device' | 'awaiting_service' | 'awaiting_issue' | 'completed';
+
+export interface IntakeData {
+  device_type?: 'PC' | 'Notebook';
+  service_category?: string;
+  issue_description?: string;
+  completed_at?: string;
+}
+
+export interface BotTransitionResult {
+  nextStatus: IntakeStatus;
+  nextData: IntakeData;
+  replyText: string | null;
+  quickReplyOptions?: { label: string; text: string }[];
+}
+
+export const DEVICE_OPTIONS = [
+  { label: '🖥️ คอมตั้งโต๊ะ (PC)', text: 'คอมพิวเตอร์ตั้งโต๊ะ (PC)', value: 'PC' as const },
+  { label: '💻 โน้ตบุ๊ก (Notebook)', text: 'โน้ตบุ๊ก (Notebook)', value: 'Notebook' as const },
+];
+
+export const SERVICE_OPTIONS = [
+  { label: '🪟 ลง Windows / โปรแกรม', text: '🪟 ลง Windows / โปรแกรม', value: 'ลง Windows / โปรแกรม' },
+  { label: '⚡ อัปเกรดเครื่อง (RAM/SSD)', text: '⚡ อัปเกรดเครื่อง (RAM/SSD)', value: 'อัปเกรดเครื่อง (RAM/SSD)' },
+  { label: '🧹 ตรวจเช็ก / ทำความสะอาด', text: '🧹 ตรวจเช็ก / ทำความสะอาด', value: 'ตรวจเช็ก / ทำความสะอาด' },
+  { label: '💬 ปรึกษาอาการทั่วไป', text: '💬 ปรึกษาอาการทั่วไป', value: 'ปรึกษาอาการทั่วไป' },
+];
+
+export function evaluateBotTransition(
+  status: IntakeStatus,
+  data: IntakeData,
+  text: string,
+  kind: string = 'text'
+): BotTransitionResult {
+  const trimmed = text.trim();
+  const lower = trimmed.toLowerCase();
+
+  // Reset trigger
+  if (lower === 'เริ่มใหม่' || lower === 'reset' || lower === '/reset') {
+    return {
+      nextStatus: 'awaiting_device',
+      nextData: {},
+      replyText: '🕹️ 8bit Shop Assistant ยินดีต้อนรับครับ!\nเพื่อความรวดเร็ว กรุณาเลือกประเภทอุปกรณ์ของคุณ:',
+      quickReplyOptions: DEVICE_OPTIONS.map(o => ({ label: o.label, text: o.text })),
+    };
+  }
+
+  // Already completed - do not interrupt human conversation
+  if (status === 'completed') {
+    return {
+      nextStatus: 'completed',
+      nextData: data,
+      replyText: null,
+    };
+  }
+
+  // New or awaiting_device
+  if (status === 'new' || status === 'awaiting_device') {
+    const isPc = /คอม|pc|ตั้งโต๊ะ/i.test(trimmed);
+    const isNb = /โน้ต|notebook|laptop/i.test(trimmed);
+
+    if (isPc || isNb) {
+      const device_type = isPc ? 'PC' : 'Notebook';
+      return {
+        nextStatus: 'awaiting_service',
+        nextData: { ...data, device_type },
+        replyText: `รับทราบครับ (${device_type}) 🔧\nกรุณาเลือกบริการที่ต้องการ:`,
+        quickReplyOptions: SERVICE_OPTIONS.map(o => ({ label: o.label, text: o.text })),
+      };
+    }
+
+    // Default prompt to choose device
+    return {
+      nextStatus: 'awaiting_device',
+      nextData: data,
+      replyText: '🕹️ สวัสดีครับ ยินดีต้อนรับสู่ 8bit!\nเพื่อความสะดวกรวดเร็ว ช่างขอข้อมูลเบื้องต้นสักนิดนะครับ\nกรุณาเลือกประเภทอุปกรณ์ของคุณ:',
+      quickReplyOptions: DEVICE_OPTIONS.map(o => ({ label: o.label, text: o.text })),
+    };
+  }
+
+  // Awaiting service
+  if (status === 'awaiting_service') {
+    let matchedService = trimmed;
+    const found = SERVICE_OPTIONS.find(s => s.text === trimmed || trimmed.includes(s.value));
+    if (found) {
+      matchedService = found.value;
+    }
+
+    return {
+      nextStatus: 'awaiting_issue',
+      nextData: { ...data, service_category: matchedService },
+      replyText: `เลือกบริการ: ${matchedService} เรียบร้อยครับ 📋\n\nช่วยพิมพ์เล่าอาการ หรือปัญหาที่พบเพิ่มเติมสั้นๆ ให้หน่อยครับ (หรือถ่ายภาพ/คลิปอาการส่งมาได้เลยครับ)`,
+    };
+  }
+
+  // Awaiting issue details
+  if (status === 'awaiting_issue') {
+    const issueText = kind === 'image' ? '[ลูกค้าแนบภาพอาการ]' : trimmed || 'ตรวจเช็กอาการทั่วไป';
+    return {
+      nextStatus: 'completed',
+      nextData: {
+        ...data,
+        issue_description: issueText,
+        completed_at: new Date().toISOString(),
+      },
+      replyText: '🎮 บันทึกข้อมูลเรียบร้อยแล้วครับ!\nช่างได้รับข้อมูลแล้ว และจะเข้ามาตรวจสอบพร้อมตอบกลับในแชตนี้สักครู่นะครับ ขอบคุณครับ 🙏',
+    };
+  }
+
+  return {
+    nextStatus: status,
+    nextData: data,
+    replyText: null,
+  };
+}
+
+export function buildLineReplyPayload(transition: BotTransitionResult) {
+  if (!transition.replyText) return [];
+
+  const message: {
+    type: 'text';
+    text: string;
+    quickReply?: { items: Array<{ type: 'action'; action: { type: 'message'; label: string; text: string } }> };
+  } = {
+    type: 'text',
+    text: transition.replyText,
+  };
+
+  if (transition.quickReplyOptions && transition.quickReplyOptions.length > 0) {
+    message.quickReply = {
+      items: transition.quickReplyOptions.map(opt => ({
+        type: 'action',
+        action: {
+          type: 'message',
+          label: opt.label.slice(0, 20),
+          text: opt.text.slice(0, 300),
+        },
+      })),
+    };
+  }
+
+  return [message];
+}
+
+export async function sendLineReply(replyToken: string, messages: any[]): Promise<boolean> {
+  const token = process.env.LINE_CHANNEL_ACCESS_TOKEN?.trim();
+  if (!token || !replyToken || !messages.length) return false;
+
+  try {
+    const res = await fetch('https://api.line.me/v2/bot/message/reply', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        replyToken,
+        messages,
+      }),
+      signal: AbortSignal.timeout(5000),
+    });
+    return res.ok;
+  } catch (err) {
+    console.error('sendLineReply error:', err);
+    return false;
+  }
+}
