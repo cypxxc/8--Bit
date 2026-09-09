@@ -102,7 +102,7 @@ export default function LineInbox({ onCreateJob }: LineInboxProps = {}) {
         <form onSubmit={search} className="line-search"><input name="customer" placeholder="ค้นหาลูกค้า" aria-label="ค้นหาลูกค้า LINE"/><button className="admin-button">ค้นหา</button></form>
         <div className="line-filters">
           <label className="line-unread-filter"><input type="checkbox" checked={unread} onChange={e=>{setUnread(e.target.checked);setPage(0);}}/> เฉพาะยังไม่อ่าน</label>
-          <label className="line-unread-filter"><input type="checkbox" checked={completedOnly} onChange={e=>setCompletedOnly(e.target.checked)}/> เฉพาะข้อมูลครบ</label>
+          <label className="line-unread-filter"><input type="checkbox" checked={completedOnly} onChange={e=>{setCompletedOnly(e.target.checked);setPage(0);}}/> เฉพาะข้อมูลครบ</label>
         </div>
         {!list?<p role="status">กำลังโหลดลูกค้า…</p>:!list.conversations.length?<div className="admin-empty">ยังไม่มีแชตในรายการนี้<br/>ลูกค้าทัก LINE OA แล้วจะมีห้องของตัวเองที่นี่</div>:!filteredRooms.length?<div className="admin-empty">ไม่พบห้องแชตที่ข้อมูลครบ</div>:
           filteredRooms.map(c=><button key={c.id} onClick={()=>select(c)} className="line-room" aria-pressed={selectedId===c.id}>

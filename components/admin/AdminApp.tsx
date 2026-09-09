@@ -68,6 +68,7 @@ export default function AdminApp() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [editing, setEditing] = useState<Job | null | undefined>(undefined);
+  const [jobPrefill, setJobPrefill] = useState<Partial<Job> | null>(null);
   const [retrying, setRetrying] = useState("");
   const [group, setGroup] = useState("");
   const [isMuted, setIsMuted] = useState(false);
@@ -176,6 +177,22 @@ export default function AdminApp() {
   const toggleSound = () => {
     const muted = sound.toggleMute();
     setIsMuted(muted);
+  };
+
+  const handleCreateJobFromIntake = (prefill: {
+    customer_name: string;
+    device_type: string;
+    description: string;
+    line_id: string;
+  }) => {
+    sound.playPowerUp();
+    setJobPrefill({
+      customer_name: prefill.customer_name,
+      device_type: prefill.device_type === "Notebook" ? "Notebook" : "PC",
+      description: prefill.description,
+      line_id: prefill.line_id,
+    });
+    setEditing(null);
   };
 
   if (!email) {
@@ -295,6 +312,7 @@ export default function AdminApp() {
               className="admin-button primary"
               onClick={() => {
                 sound.playPowerUp();
+                setJobPrefill(null);
                 setEditing(null);
               }}
             >
@@ -325,6 +343,7 @@ export default function AdminApp() {
                     key={job.id}
                     onClick={() => {
                       sound.playSelect();
+                      setJobPrefill(null);
                       setEditing(job);
                     }}
                   >
@@ -362,7 +381,7 @@ export default function AdminApp() {
       )}
 
       {/* TAB 2: แชตลูกค้า LINE */}
-      {tab === "inbox" && <LineInbox />}
+      {tab === "inbox" && <LineInbox onCreateJob={handleCreateJobFromIntake} />}
 
       {/* TAB 3: บริการและราคา (Services) */}
       {tab === "services" && (
@@ -500,14 +519,18 @@ export default function AdminApp() {
       {/* Job Form Drawer / Modal */}
       {editing !== undefined && (
         <JobForm
+          key={editing?.id || (jobPrefill ? `prefill-${jobPrefill.line_id || ""}` : "new-job")}
           job={editing}
           services={services}
+          initialData={jobPrefill}
           onClose={() => {
             sound.playClick();
+            setJobPrefill(null);
             setEditing(undefined);
           }}
           onSaved={() => {
             sound.playVictory();
+            setJobPrefill(null);
             setEditing(undefined);
             setMessage("บันทึกงานเรียบร้อยแล้ว");
             void refresh();

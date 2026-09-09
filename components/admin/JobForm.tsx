@@ -11,11 +11,13 @@ export default function JobForm({
   services,
   onClose,
   onSaved,
+  initialData,
 }: {
   job: Job | null;
   services: ServiceRecord[];
   onClose: () => void;
   onSaved: () => void;
+  initialData?: Partial<Job> | null;
 }) {
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
@@ -163,23 +165,42 @@ export default function JobForm({
               <div className="admin-cols">
                 <label>
                   ชื่อลูกค้า *
-                  <input name="customer_name" required maxLength={100} />
+                  <input
+                    name="customer_name"
+                    defaultValue={initialData?.customer_name || ""}
+                    required
+                    maxLength={100}
+                  />
                 </label>
                 <label>
                   เบอร์โทร *
-                  <input name="phone" type="tel" required maxLength={30} />
+                  <input
+                    name="phone"
+                    type="tel"
+                    defaultValue={initialData?.phone || ""}
+                    required
+                    maxLength={30}
+                  />
                 </label>
               </div>
               <div className="admin-cols">
                 <label>
                   LINE ID
-                  <input name="line_id" maxLength={100} />
+                  <input
+                    name="line_id"
+                    defaultValue={initialData?.line_id || ""}
+                    maxLength={100}
+                  />
                 </label>
                 <label>
                   ประเภทเครื่อง
-                  <select name="device_type">
-                    <option>Desktop PC</option>
+                  <select
+                    name="device_type"
+                    defaultValue={initialData?.device_type || "PC"}
+                  >
+                    <option>PC</option>
                     <option>Notebook</option>
+                    <option>Desktop PC</option>
                     <option>Mini PC</option>
                     <option>อื่น ๆ</option>
                   </select>
@@ -256,7 +277,12 @@ export default function JobForm({
               </fieldset>
               <label>
                 รายละเอียดคำขอ
-                <textarea name="description" rows={3} maxLength={2000} />
+                <textarea
+                  name="description"
+                  defaultValue={initialData?.description || ""}
+                  rows={3}
+                  maxLength={2000}
+                />
               </label>
               <p className="admin-muted">
                 หลังเพิ่มงาน สามารถเปิดรายการเพื่อบันทึกราคา อุปกรณ์ที่ฝาก
