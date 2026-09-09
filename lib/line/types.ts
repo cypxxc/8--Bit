@@ -2,6 +2,8 @@ export interface Conversation {
   id:string; line_user_id:string; display_name:string; picture_url:string|null;
   last_message_at:string|null; unread_count:number;
   preview?:string;
+  intake_status?:string;
+  intake_data?:Record<string, any>;
 }
 export interface ChatMessage {
   id:number; conversation_id:string; kind:string; text:string; unsent:boolean;

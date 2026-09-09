@@ -10,7 +10,7 @@ export async function GET(request:Request) {
     const params = new URL(request.url).searchParams;
     const q = (params.get('q') || '').slice(0,100).replace(/[^\p{L}\p{M}\p{N} @._-]/gu,'');
     const page = Math.max(0,Math.min(10000,Number(params.get('page')) || 0));
-    let query = database().from('line_conversations').select('id,line_user_id,display_name,picture_url,profile_updated_at,last_message_at,unread_count,line_messages(kind,text,unsent)',{count:'exact'})
+    let query = database().from('line_conversations').select('id,line_user_id,display_name,picture_url,profile_updated_at,last_message_at,unread_count,intake_status,intake_data,line_messages(kind,text,unsent)',{count:'exact'})
       .not('last_message_at','is',null).order('last_message_at',{ascending:false}).order('id')
       .order('sent_at',{referencedTable:'line_messages',ascending:false}).order('id',{referencedTable:'line_messages',ascending:false})
       .limit(1,{referencedTable:'line_messages'}).range(page*25,page*25+24);
