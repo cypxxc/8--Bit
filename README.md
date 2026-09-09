@@ -29,9 +29,20 @@
 ### 2. Shop Owner Administration Portal (`/admin`)
 - **Protected Access**: Authenticated via Supabase Auth and restricted through server-verified `shop_admins` records. Zero anonymous public table permissions.
 - **Service Job Pipeline**: Search, filter, and update repair jobs (Status progression: `intake` ➔ `queued` ➔ `in-progress` ➔ `testing` ➔ `ready` ➔ `completed` ➔ `cancelled`). Optimistic concurrency protection using record version checks prevents overwrite collisions.
-- **Live LINE Customer Inbox**: Read incoming customer messages, view media/attachments directly from LINE Webhook streams, and filter unread conversations with auto-refreshing polling.
+- **Live LINE Customer Inbox**: Read incoming customer messages, view media/attachments directly from LINE Webhook streams, view live intake status badges (`new`, `awaiting_device`, `awaiting_service`, `awaiting_issue`, `completed`), and perform one-click job prefill into the Service Job Pipeline.
 - **Catalog & Price Matrix Editor**: Adjust service titles, descriptions, starting prices, and toggle public visibility in real time.
 - **Notification Audit Log**: Track outbound LINE notifications, idempotency keys, and trigger retries for failed dispatches.
+
+### 3. LINE OA Intake Chatbot & Technician Handoff
+- **State-Driven Intake Workflow**: Automated guided intake via LINE Messaging API Webhooks:
+  1. **Greeting (`new`)**: Welcomes the customer on first interaction and provides Quick Reply device selection (`คอมพิวเตอร์ตั้งโต๊ะ (PC)` vs `โน้ตบุ๊ก (Notebook)`).
+  2. **Device Selection (`awaiting_device`)**: Records device choice and prompts with service quick replies (`ลง Windows / โปรแกรม`, `อัปเกรดเครื่อง (RAM/SSD)`, `ตรวจเช็ก / ทำความสะอาด`, `ปรึกษาอาการทั่วไป`).
+  3. **Service Selection (`awaiting_service`)**: Stores chosen service category and prompts for symptom description or photo attachments.
+  4. **Issue Description (`awaiting_issue`)**: Records customer problem description or photos, advancing to `completed` with a `completed_at` timestamp.
+  5. **Completion & Human Handoff (`completed`)**: Confirms receipt and remains completely silent on subsequent messages so technicians can consult naturally without bot interference.
+- **Customer Reset Keyword**: Customers can send `เริ่มใหม่`, `reset`, or `/reset` anytime to reset conversation state back to device selection.
+- **Admin One-Click Job Prefill**: Shop technicians viewing any conversation in `/admin` can click **"⚡ สร้างใบงานจากข้อมูลแชต"** to automatically populate `customer_name`, `device_type`, `description`, and `line_id` into the repair job form.
+- **Manual Intake Control**: Technicians can reset or adjust customer intake state directly from the inbox action bar (`/api/admin/inbox/intake`).
 
 ---
 
@@ -103,16 +114,23 @@ This creates the administrative record in `shop_admins` and outputs a one-time s
 Run tests and verification commands:
 
 ```bash
+# Run all automated test suites (unit, webhook, database, bot state machine, and e2e)
+npx tsx --test tests/*.test.ts
+
 # Run ESLint validation
 npm run lint
 
 # Compile and verify Next.js production build
 npm run build
 
-# Run unit and security tests
-npx tsx tests/validation.test.ts
-npx tsx tests/line-webhook.test.ts
-npx tsx tests/request-security.test.ts
+# Run specific test suites individually
+npx tsx --test tests/line-intake-e2e.test.ts
+npx tsx --test tests/line-bot.test.ts
+npx tsx --test tests/line-webhook.test.ts
+npx tsx --test tests/admin-inbox-api.test.ts
+npx tsx --test tests/line-intake-db.test.ts
+npx tsx --test tests/validation.test.ts
+npx tsx --test tests/request-security.test.ts
 ```
 
 ---

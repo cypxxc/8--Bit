@@ -54,13 +54,23 @@ export function evaluateBotTransition(
     };
   }
 
-  // New or awaiting_device
-  if (status === 'new' || status === 'awaiting_device') {
-    const isPc = /คอม|pc|ตั้งโต๊ะ/i.test(trimmed);
-    const isNb = /โน้ต|notebook|laptop/i.test(trimmed);
+  // New customer or uninitialized state -> prompt to choose device
+  if (status === 'new') {
+    return {
+      nextStatus: 'awaiting_device',
+      nextData: data,
+      replyText: '🕹️ สวัสดีครับ ยินดีต้อนรับสู่ 8bit!\nเพื่อความสะดวกรวดเร็ว ช่างขอข้อมูลเบื้องต้นสักนิดนะครับ\nกรุณาเลือกประเภทอุปกรณ์ของคุณ:',
+      quickReplyOptions: DEVICE_OPTIONS.map(o => ({ label: o.label, text: o.text })),
+    };
+  }
 
-    if (isPc || isNb) {
-      const device_type = isPc ? 'PC' : 'Notebook';
+  // Awaiting device selection
+  if (status === 'awaiting_device') {
+    const isNb = /โน้ต|notebook|laptop/i.test(trimmed);
+    const isPc = /คอม|pc|ตั้งโต๊ะ/i.test(trimmed);
+
+    if (isNb || isPc) {
+      const device_type = isNb && !/ตั้งโต๊ะ|\(pc\)/i.test(trimmed) ? 'Notebook' : 'PC';
       return {
         nextStatus: 'awaiting_service',
         nextData: { ...data, device_type },
