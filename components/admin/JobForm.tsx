@@ -198,11 +198,8 @@ export default function JobForm({
                     name="device_type"
                     defaultValue={initialData?.device_type || "PC"}
                   >
-                    <option>PC</option>
-                    <option>Notebook</option>
-                    <option>Desktop PC</option>
-                    <option>Mini PC</option>
-                    <option>อื่น ๆ</option>
+                    <option value="PC">PC</option>
+                    <option value="Notebook">Notebook</option>
                   </select>
                 </label>
               </div>
