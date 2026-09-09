@@ -30,6 +30,7 @@ test('POST /api/admin/inbox/intake route exists and implements intake reset', ()
   const intakeRoute = readFileSync('app/api/admin/inbox/intake/route.ts', 'utf8');
   assert.match(intakeRoute, /export\s+const\s+runtime\s*=\s*['"]nodejs['"]/);
   assert.match(intakeRoute, /export\s+async\s+function\s+POST/);
+  assert.match(intakeRoute, /sameOrigin/);
   assert.match(intakeRoute, /requireOwner/);
   assert.match(intakeRoute, /shop_update_line_intake/);
   assert.match(intakeRoute, /awaiting_device/);
