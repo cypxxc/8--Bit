@@ -2,6 +2,7 @@
 export interface IncomingLineEvent {
   eventId: string; type: string; userId: string; sentAt: string;
   messageId?: string; kind?: string; text?: string; metadata?: Record<string, unknown>;
+  replyToken?: string;
 }
 export interface ReceiverOptions {
   secret: string; destination: string;
@@ -20,6 +21,9 @@ export function normalizeEvent(value: unknown): IncomingLineEvent | null {
     throw new Error('Invalid event');
   const result: IncomingLineEvent = {eventId: str(event.webhookEventId),type: str(event.type),
     userId: str(source.userId),sentAt: new Date(event.timestamp).toISOString()};
+  if (typeof event.replyToken === 'string' && str(event.replyToken)) {
+    result.replyToken = str(event.replyToken, 100);
+  }
   if (event.type === 'unsend') {
     result.messageId = str(record(event.unsend).messageId);
     if (!result.messageId) throw new Error('Missing message');

@@ -25,11 +25,15 @@ test('LINE verification accepts empty events; missing configuration fails closed
 test('failed persistence returns retriable error',async()=>{
   assert.equal((await receiveWebhook(request({destination,events:[event]}),{secret,destination,save:async()=>{throw Error('offline');},verified:async()=>{}})).status,503);
 });
-test('customer identities remain separate; groups ignored; only selected fields retained',()=>{
-  assert.equal(normalizeEvent({...event,source:{type:'group',groupId:'g',userId:event.source.userId}}),null);
-  const normalized=normalizeEvent({...event,replyToken:'secret',message:{...event.message,unknown:'not retained'}}) as IncomingLineEvent;
-  assert.equal(normalized.userId,event.source.userId);
-  assert.equal(JSON.stringify(normalized).includes('secret'),false);
-  assert.equal(JSON.stringify(normalized).includes('not retained'),false);
-  assert.equal(normalizeEvent({...event,type:'unsend',unsend:{messageId:'123'}})?.messageId,'123');
+test('customer identities remain separate; groups ignored; replyToken retained for message events', () => {
+  assert.equal(normalizeEvent({ ...event, source: { type: 'group', groupId: 'g', userId: event.source.userId } }), null);
+  const normalized = normalizeEvent({
+    ...event,
+    replyToken: 'test-reply-token-123',
+    message: { ...event.message, unknown: 'not retained' },
+  }) as IncomingLineEvent;
+  assert.equal(normalized.userId, event.source.userId);
+  assert.equal(normalized.replyToken, 'test-reply-token-123');
+  assert.equal(JSON.stringify(normalized).includes('not retained'), false);
+  assert.equal(normalizeEvent({ ...event, type: 'unsend', unsend: { messageId: '123' } })?.messageId, '123');
 });
