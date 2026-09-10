@@ -303,7 +303,7 @@ git commit -m "style: polish LINE inbox with clean 16-bit comms console aestheti
 - Consumes: `Job`, `ServiceRecord`, `SERVICE_GROUPS`
 - Produces: Clean 16-bit drawer modal, polished service cards, and preserved 3D push-switch checkboxes.
 
-- [ ] **Step 1: Polish `.admin-drawer` and form controls**
+- [x] **Step 1: Polish `.admin-drawer` and form controls**
 Refine drawer framing with clean 16-bit border and smooth scroll.
 Ensure inputs and textareas retain recessed styling:
 ```css
@@ -317,17 +317,17 @@ Ensure inputs and textareas retain recessed styling:
 }
 ```
 
-- [ ] **Step 2: Preserve and polish retro push-switch checkboxes**
+- [x] **Step 2: Preserve and polish retro push-switch checkboxes**
 Ensure `.admin-workspace input[type="checkbox"]` retains the approved grey-off / bright-green-on style with 1px bevels and zero checkmark pseudo-elements.
 
-- [ ] **Step 3: Polish `.admin-service` cards**
+- [x] **Step 3: Polish `.admin-service` cards**
 2-column grid with clean 16-bit docket styling, price tag in neon amber/cyan, and tactile action buttons.
 
-- [ ] **Step 4: Run full verification suite**
+- [x] **Step 4: Run full verification suite**
 Run: `npm run test` and `npm run build`
 Expected: All tests pass and build succeeds cleanly.
 
-- [ ] **Step 5: Commit changes**
+- [x] **Step 5: Commit changes**
 ```bash
 git add components/admin/JobForm.tsx components/admin/ServiceEditor.tsx app/admin/admin.css
 git commit -m "style: refine job drawer modal and service catalog to 16-bit clean"
