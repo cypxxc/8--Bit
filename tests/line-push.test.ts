@@ -20,23 +20,25 @@ test('sendLinePushMessage sends push message with correct payload', async () => 
   const origFetch = global.fetch;
 
   let capturedUrl = '';
-  let capturedBody: any = null;
+  let capturedBody: { to?: string; messages?: Array<{ type: string; text: string }> } | null = null;
   let capturedAuth = '';
 
   global.fetch = (async (url: string | URL | Request, init?: RequestInit) => {
     capturedUrl = String(url);
     capturedBody = JSON.parse(String(init?.body || '{}'));
-    capturedAuth = String(init?.headers && (init.headers as any)['Authorization']);
+    capturedAuth = String(init?.headers && (init.headers as Record<string, string>)['Authorization']);
     return new Response(JSON.stringify({}), { status: 200 });
-  }) as any;
+  }) as typeof fetch;
 
   try {
     const result = await sendLinePushMessage('Utestuser', 'ทดสอบส่งข้อความ');
     assert.equal(result.ok, true);
     assert.equal(capturedUrl, 'https://api.line.me/v2/bot/message/push');
     assert.equal(capturedAuth, 'Bearer test-token');
-    assert.equal(capturedBody.to, 'Utestuser');
-    assert.deepEqual(capturedBody.messages, [{ type: 'text', text: 'ทดสอบส่งข้อความ' }]);
+    const body = capturedBody as { to?: string; messages?: Array<{ type: string; text: string }> } | null;
+    assert.ok(body);
+    assert.equal(body.to, 'Utestuser');
+    assert.deepEqual(body.messages, [{ type: 'text', text: 'ทดสอบส่งข้อความ' }]);
   } finally {
     process.env.LINE_CHANNEL_ACCESS_TOKEN = origToken;
     global.fetch = origFetch;

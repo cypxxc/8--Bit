@@ -517,48 +517,78 @@
   white-space: pre-wrap;
 }
 
-/* Custom 20px Retro Checkbox Inputs */
+/* All Checkboxes across Admin Dashboard: Retro 3D Arcade Push Indicator (Grey -> Green, No Checkmark) */
+.admin-workspace input[type="checkbox"],
+.admin-content input[type="checkbox"],
+.admin-form input[type="checkbox"],
 .admin-checks input[type="checkbox"],
 .line-unread-filter input[type="checkbox"],
 .admin-row input[type="checkbox"],
+.admin-service input[type="checkbox"],
+.admin-cols input[type="checkbox"],
 input.admin-checkbox[type="checkbox"] {
   appearance: none;
   -webkit-appearance: none;
   width: 22px;
   height: 22px;
+  min-width: 22px;
+  min-height: 22px;
+  background-color: #475569; /* Solid Retro Grey */
   border: 2px solid #334155;
-  background: #05080e;
+  box-shadow: 
+    inset 2px 2px 0 #64748b,
+    inset -2px -2px 0 #1e293b,
+    1px 1px 0 #000;
   margin: 0;
-  display: grid;
-  place-items: center;
+  display: inline-block;
+  vertical-align: middle;
   cursor: pointer;
   flex-shrink: 0;
-  transition: all 0.15s ease;
-  box-shadow: 1px 1px 0 #000;
+  transition: all 0.12s ease;
+  position: relative;
 }
 
-.admin-checks input[type="checkbox"]:hover,
-.line-unread-filter input[type="checkbox"]:hover,
-.admin-row input[type="checkbox"]:hover {
-  border-color: #38bdf8;
+/* Hover on Grey state */
+.admin-workspace input[type="checkbox"]:hover:not(:checked),
+.admin-content input[type="checkbox"]:hover:not(:checked),
+.admin-form input[type="checkbox"]:hover:not(:checked),
+.admin-checks input[type="checkbox"]:hover:not(:checked),
+.line-unread-filter input[type="checkbox"]:hover:not(:checked) {
+  background-color: #64748b;
+  border-color: #475569;
 }
 
+/* Active / Checked state: Solid Bright Arcade Green */
+.admin-workspace input[type="checkbox"]:checked,
+.admin-content input[type="checkbox"]:checked,
+.admin-form input[type="checkbox"]:checked,
 .admin-checks input[type="checkbox"]:checked,
 .line-unread-filter input[type="checkbox"]:checked,
-.admin-row input[type="checkbox"]:checked {
-  background: #022c22;
-  border-color: #39ff14;
-  box-shadow: 0 0 8px rgba(57, 255, 20, 0.4);
+.admin-row input[type="checkbox"]:checked,
+.admin-service input[type="checkbox"]:checked,
+.admin-cols input[type="checkbox"]:checked {
+  background-color: #22c55e !important; /* Solid Bright Green */
+  border-color: #16a34a !important;
+  box-shadow: 
+    inset 2px 2px 0 #86efac,
+    inset -2px -2px 0 #15803d,
+    0 0 12px rgba(34, 197, 94, 0.65),
+    1px 1px 0 #000 !important;
 }
 
-.admin-checks input[type="checkbox"]:checked::after,
-.line-unread-filter input[type="checkbox"]:checked::after,
-.admin-row input[type="checkbox"]:checked::after {
-  content: "✔";
-  color: #39ff14;
-  font-size: 13px;
-  font-weight: 900;
-  line-height: 1;
+/* Push-in effect when clicking */
+.admin-workspace input[type="checkbox"]:active {
+  transform: translate(1px, 1px);
+}
+
+/* STRICTLY NO CHECKMARK - Remove content and pseudo-elements */
+.admin-checks input[type="checkbox"]::after,
+.line-unread-filter input[type="checkbox"]::after,
+.admin-row input[type="checkbox"]::after,
+.admin-workspace input[type="checkbox"]::after,
+.admin-content input[type="checkbox"]::after {
+  content: none !important;
+  display: none !important;
 }
 
 .admin-checks {
@@ -695,14 +725,55 @@ input.admin-checkbox[type="checkbox"] {
 }
 
 .line-unread-filter {
-  display: flex;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #cbd5e1;
+  padding: 6px 10px;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  box-shadow: 1px 1px 0 #000;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+.line-unread-filter:hover {
+  border-color: #38bdf8;
+  color: #ffffff;
+}
+
+.line-unread-filter:has(input:checked) {
+  background: #064e3b;
+  border-color: #22c55e;
+  color: #ffffff;
+}
+
+.admin-toggle-label {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
   font-size: 13px;
   color: #cbd5e1;
-  margin-bottom: 14px;
-  padding: 4px;
   cursor: pointer;
+  user-select: none;
+  padding: 6px 10px;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  box-shadow: 1px 1px 0 #000;
+  transition: all 0.15s ease;
+}
+
+.admin-toggle-label:hover {
+  border-color: #38bdf8;
+  color: #ffffff;
+}
+
+.admin-toggle-label:has(input:checked) {
+  background: #064e3b;
+  border-color: #22c55e;
+  color: #ffffff;
 }
 
 .line-filters {
@@ -820,9 +891,96 @@ input.admin-checkbox[type="checkbox"] {
 }
 
 .line-thread-head {
-  padding: 16px 20px;
+  padding: 14px 20px;
   border-bottom: 3px solid #1e293b;
   background: #0c1322;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.line-thread-head-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 220px;
+}
+
+.line-thread-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.line-thread-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.line-thread-title-row h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #f1f5f9;
+}
+
+.line-thread-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.line-create-job-head-btn {
+  background: #064e3b !important;
+  color: #39ff14 !important;
+  border: 2px solid #39ff14 !important;
+  font-family: var(--font-press-start), monospace !important;
+  font-size: 10px !important;
+  padding: 8px 12px !important;
+  box-shadow: 2px 2px 0 #000;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+}
+
+.line-create-job-head-btn:hover {
+  background: #047857 !important;
+  color: #ffffff !important;
+  border-color: #34d399 !important;
+}
+
+.line-intake-toggle-btn {
+  font-size: 12px !important;
+  border: 2px solid #00f0ff !important;
+  color: #00f0ff !important;
+  background: rgba(0, 240, 255, 0.08) !important;
+  cursor: pointer;
+}
+
+.line-intake-toggle-btn:hover,
+.line-intake-toggle-btn.is-active {
+  background: rgba(0, 240, 255, 0.2) !important;
+  color: #ffffff !important;
+}
+
+.line-intake-close-btn {
+  background: transparent;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 2px 8px;
+  margin-left: auto;
+  line-height: 1.2;
+}
+
+.line-intake-close-btn:hover {
+  color: #f87171;
+  border-color: #f87171;
 }
 
 /* Retro 8-bit Intake Summary Card */

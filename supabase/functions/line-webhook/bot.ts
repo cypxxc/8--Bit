@@ -97,10 +97,15 @@ export function evaluateBotTransition(
 
   // New customer or uninitialized state -> prompt to choose device
   if (status === 'new') {
+    const isGreeting = /^(สวัสดี|หวัดดี|ดีครับ|ดีค่ะ|hello|hi|hey|ดีคับ|ทักครับ|ทักค่ะ|.*ปรึกษา.*|.*สอบถาม.*)$/i.test(trimmed);
+    const initialIssue = isGreeting ? undefined : trimmed;
+
     return {
       nextStatus: 'awaiting_device',
-      nextData: data,
-      replyText: '🕹️ สวัสดีครับ ยินดีต้อนรับสู่ 8bit!\nเพื่อความสะดวกรวดเร็ว ช่างขอข้อมูลเบื้องต้นสักนิดนะครับ\nกรุณาเลือกประเภทอุปกรณ์ของคุณ:',
+      nextData: { ...data, ...(initialIssue ? { issue_description: initialIssue } : {}) },
+      replyText: initialIssue
+        ? `🕹️ สวัสดีครับ ยินดีต้อนรับสู่ 8bit!\nรับทราบอาการเบื้องต้น: "${initialIssue}" เรียบร้อยครับ 📋\n\nเพื่อความสะดวกรวดเร็ว ช่างขอข้อมูลเบื้องต้นสักนิดนะครับ\nกรุณาเลือกประเภทอุปกรณ์ของคุณ:`
+        : '🕹️ สวัสดีครับ ยินดีต้อนรับสู่ 8bit!\nเพื่อความสะดวกรวดเร็ว ช่างขอข้อมูลเบื้องต้นสักนิดนะครับ\nกรุณาเลือกประเภทอุปกรณ์ของคุณ:',
       quickReplyOptions: DEVICE_OPTIONS.map(o => ({ label: o.label, text: o.text })),
     };
   }
@@ -120,12 +125,18 @@ export function evaluateBotTransition(
       };
     }
 
-    // Default prompt to choose device
+    // Customer replied with additional symptoms or questions instead of picking device
+    const prevIssue = data.issue_description;
+    const combinedIssue = prevIssue ? `${prevIssue}\n${trimmed}` : trimmed;
+
     return {
       nextStatus: 'awaiting_device',
-      nextData: data,
-      replyText: '🕹️ สวัสดีครับ ยินดีต้อนรับสู่ 8bit!\nเพื่อความสะดวกรวดเร็ว ช่างขอข้อมูลเบื้องต้นสักนิดนะครับ\nกรุณาเลือกประเภทอุปกรณ์ของคุณ:',
-      quickReplyOptions: DEVICE_OPTIONS.map(o => ({ label: o.label, text: o.text })),
+      nextData: { ...data, issue_description: combinedIssue },
+      replyText: `ช่างบันทึกอาการ: "${trimmed}" ให้เรียบร้อยครับ 📋\n\nรบกวนแตะเลือกประเภทอุปกรณ์ของคุณ (PC หรือ โน้ตบุ๊ก) ด้านล่างอีกนิดเดียวนะครับ ช่างจะได้ประเมินวิธีแก้ไขได้ถูกต้องครับ 👇`,
+      quickReplyOptions: [
+        ...DEVICE_OPTIONS.map(o => ({ label: o.label, text: o.text })),
+        { label: '🧑‍🔧 ติดต่อช่าง', text: 'ติดต่อช่าง' },
+      ],
     };
   }
 
@@ -140,13 +151,20 @@ export function evaluateBotTransition(
     return {
       nextStatus: 'awaiting_issue',
       nextData: { ...data, service_category: matchedService },
-      replyText: `เลือกบริการ: ${matchedService} เรียบร้อยครับ 📋\n\nช่วยพิมพ์เล่าอาการ หรือปัญหาที่พบเพิ่มเติมสั้นๆ ให้หน่อยครับ (หรือถ่ายภาพ/คลิปอาการส่งมาได้เลยครับ)`,
+      replyText: data.issue_description
+        ? `เลือกบริการ: ${matchedService} เรียบร้อยครับ 📋\n(อาการที่แจ้งไว้เบื้องต้น: "${data.issue_description}")\n\nช่วยพิมพ์เล่าอาการ หรือส่งรูปภาพ/คลิปเพิ่มเติมได้เลยครับ (หรือพิมพ์ "ตามที่แจ้ง" เพื่อยืนยัน)`
+        : `เลือกบริการ: ${matchedService} เรียบร้อยครับ 📋\n\nช่วยพิมพ์เล่าอาการ หรือปัญหาที่พบเพิ่มเติมสั้นๆ ให้หน่อยครับ (หรือถ่ายภาพ/คลิปอาการส่งมาได้เลยครับ)`,
     };
   }
 
   // Awaiting issue details
   if (status === 'awaiting_issue') {
-    const issueText = kind === 'image' ? '[ลูกค้าแนบภาพอาการ]' : trimmed || 'ตรวจเช็กอาการทั่วไป';
+    const issueText = kind === 'image'
+      ? (data.issue_description ? `${data.issue_description}\n[ลูกค้าแนบภาพอาการ]` : '[ลูกค้าแนบภาพอาการ]')
+      : /^(ตามที่แจ้ง|เหมือนเดิม|ตามนั้น|ไม่มี)$/i.test(trimmed) && data.issue_description
+        ? data.issue_description
+        : trimmed || data.issue_description || 'ตรวจเช็กอาการทั่วไป';
+
     return {
       nextStatus: 'completed',
       nextData: {
@@ -217,3 +235,32 @@ export async function sendLineReply(replyToken: string, messages: any[], tokenOv
     return false;
   }
 }
+
+export async function sendLinePushMessage(
+  lineUserId: string,
+  text: string,
+  tokenOverride?: string
+): Promise<boolean> {
+  const token = (tokenOverride || (typeof process !== 'undefined' ? process.env?.LINE_CHANNEL_ACCESS_TOKEN : '') || '').trim();
+  if (!token || !lineUserId?.trim() || !text?.trim()) return false;
+
+  try {
+    const res = await fetch('https://api.line.me/v2/bot/message/push', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        to: lineUserId.trim(),
+        messages: [{ type: 'text', text }],
+      }),
+      signal: AbortSignal.timeout(5000),
+    });
+    return res.ok;
+  } catch (err) {
+    console.error('sendLinePushMessage error:', err);
+    return false;
+  }
+}
+

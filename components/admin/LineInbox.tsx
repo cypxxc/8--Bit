@@ -23,6 +23,7 @@ export default function LineInbox({ onCreateJob }: LineInboxProps = {}) {
   const [q,setQ] = useState(''),[page,setPage]=useState(0),[unread,setUnread]=useState(false);
   const [completedOnly, setCompletedOnly] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [showIntakeDetails, setShowIntakeDetails] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [sendingReply, setSendingReply] = useState(false);
   const [replyError, setReplyError] = useState('');
@@ -70,11 +71,20 @@ export default function LineInbox({ onCreateJob }: LineInboxProps = {}) {
   useEffect(()=>{
     if(nearBottom.current && scroll.current)scroll.current.scrollTop=scroll.current.scrollHeight;
   },[thread]);
-  function select(c:Conversation){setSelected(c);setBefore(null);setThread(null);setError('');setReplyText('');setReplyError('');nearBottom.current=true;}
+  function select(c:Conversation){setSelected(c);setBefore(null);setThread(null);setError('');setReplyText('');setReplyError('');setShowIntakeDetails(false);nearBottom.current=true;}
   function search(e:FormEvent<HTMLFormElement>){e.preventDefault();setPage(0);setQ(String(new FormData(e.currentTarget).get('customer')||''));}
 
   const currentRoom = list?.conversations.find(c => c.id === selectedId) || thread?.conversation || selected;
-  const filteredRooms = (list?.conversations || []).filter(c => !completedOnly || c.intake_status === 'completed');
+  const filteredRooms = (list?.conversations || []).filter(c => {
+    if (!completedOnly) return true;
+    const hasData = Boolean(c.intake_data && (c.intake_data.device_type || c.intake_data.service_category || c.intake_data.issue_description));
+    return c.intake_status === 'completed' && hasData;
+  });
+
+  const hasBotData = Boolean(
+    currentRoom?.intake_data &&
+    (currentRoom.intake_data.device_type || currentRoom.intake_data.service_category || currentRoom.intake_data.issue_description)
+  );
 
   async function handleSendReply(e?: FormEvent) {
     if (e) e.preventDefault();
@@ -146,31 +156,82 @@ export default function LineInbox({ onCreateJob }: LineInboxProps = {}) {
           <label className="line-unread-filter"><input type="checkbox" checked={completedOnly} onChange={e=>{setCompletedOnly(e.target.checked);setPage(0);}}/> เฉพาะข้อมูลครบ</label>
         </div>
         {!list?<p role="status">กำลังโหลดลูกค้า…</p>:!list.conversations.length?<div className="admin-empty">ยังไม่มีแชตในรายการนี้<br/>ลูกค้าทัก LINE OA แล้วจะมีห้องของตัวเองที่นี่</div>:!filteredRooms.length?<div className="admin-empty">ไม่พบห้องแชตที่ข้อมูลครบ</div>:
-          filteredRooms.map(c=><button key={c.id} onClick={()=>select(c)} className="line-room" aria-pressed={selectedId===c.id}>
-            <span className="line-avatar" aria-hidden="true">{(c.display_name||'L').slice(0,1)}</span>
-            <span className="line-room-text">
-              <div className="line-room-title">
-                <strong>{customerName(c)}</strong>
-                {c.intake_status === 'completed' && <span className="line-intake-badge completed">🤖 ข้อมูลครบ</span>}
-                {c.intake_status?.startsWith('awaiting_') && <span className="line-intake-badge pending">บอทถามอยู่</span>}
-              </div>
-              <span className="admin-muted">บัญชี …{c.line_user_id.slice(-8)}</span>
-              <span>{c.preview}</span>
-              <small>{formatDate(c.last_message_at)}</small>
-            </span>
-            {c.unread_count>0&&<span className="line-unread" aria-label={`${c.unread_count} ข้อความยังไม่อ่าน`}>{c.unread_count}</span>}
-          </button>)}
+          filteredRooms.map(c=>{
+            const roomHasData = Boolean(c.intake_data && (c.intake_data.device_type || c.intake_data.service_category || c.intake_data.issue_description));
+            return (
+              <button key={c.id} onClick={()=>select(c)} className="line-room" aria-pressed={selectedId===c.id}>
+                <span className="line-avatar" aria-hidden="true">{(c.display_name||'L').slice(0,1)}</span>
+                <span className="line-room-text">
+                  <div className="line-room-title">
+                    <strong>{customerName(c)}</strong>
+                    {c.intake_status === 'completed' && roomHasData && <span className="line-intake-badge completed">🤖 ข้อมูลครบ</span>}
+                    {c.intake_status?.startsWith('awaiting_') && <span className="line-intake-badge pending">บอทถามอยู่</span>}
+                  </div>
+                  <span className="admin-muted">บัญชี …{c.line_user_id.slice(-8)}</span>
+                  <span>{c.preview}</span>
+                  <small>{formatDate(c.last_message_at)}</small>
+                </span>
+                {c.unread_count>0&&<span className="line-unread" aria-label={`${c.unread_count} ข้อความยังไม่อ่าน`}>{c.unread_count}</span>}
+              </button>
+            );
+          })}
         <div className="admin-pages"><button className="admin-button" disabled={!page} onClick={()=>setPage(p=>p-1)}>ก่อนหน้า</button><small>{list?.count??0} ห้อง</small><button className="admin-button" disabled={(page+1)*25>=(list?.count??0)} onClick={()=>setPage(p=>p+1)}>ถัดไป</button></div>
       </aside>
       <div className="line-thread">
         {!selected?<div className="line-placeholder"><h3>เลือกลูกค้าเพื่อเปิดแชต</h3><p className="admin-muted">ข้อความของแต่ละคนแยกห้องชัดเจน</p></div>:<>
-          <header className="line-thread-head"><button className="admin-button line-back" onClick={()=>{setSelected(null);setThread(null);}}>← รายชื่อลูกค้า</button><h3>{customerName(currentRoom||selected)}</h3><p className="admin-muted">บัญชี LINE …{selected.line_user_id.slice(-8)}</p></header>
-          {currentRoom && currentRoom.intake_status === 'completed' && currentRoom.intake_data && (
+          <header className="line-thread-head">
+            <div className="line-thread-head-left">
+              <button className="admin-button line-back" onClick={()=>{setSelected(null);setThread(null);}}>← รายชื่อลูกค้า</button>
+              <div className="line-thread-info">
+                <div className="line-thread-title-row">
+                  <h3>{customerName(currentRoom||selected)}</h3>
+                  {hasBotData && <span className="line-intake-badge completed">🤖 มีข้อมูลบอท</span>}
+                </div>
+                <p className="admin-muted">บัญชี LINE …{selected.line_user_id.slice(-8)}</p>
+              </div>
+            </div>
+            <div className="line-thread-actions">
+              {hasBotData && (
+                <button
+                  type="button"
+                  className={`admin-button line-intake-toggle-btn ${showIntakeDetails ? 'is-active' : ''}`}
+                  onClick={() => setShowIntakeDetails(prev => !prev)}
+                  title="ดูข้อมูลที่บอทสอบถามลูกค้าเบื้องต้นไว้"
+                >
+                  {showIntakeDetails ? '▲ ซ่อนข้อมูลบอท' : '📋 ข้อมูลจากบอท'}
+                </button>
+              )}
+              <button
+                type="button"
+                className="admin-button primary line-create-job-head-btn"
+                onClick={() => {
+                  onCreateJob?.({
+                    customer_name: currentRoom?.display_name || '',
+                    device_type: String(currentRoom?.intake_data?.device_type || 'PC'),
+                    description: String(currentRoom?.intake_data?.issue_description || ''),
+                    line_id: currentRoom?.line_user_id || '',
+                  });
+                }}
+                title="เปิดฟอร์มสร้างงานบริการ โดยดึงชื่อและ LINE ลูกค้าจากห้องนี้"
+              >
+                ➕ สร้างงานบริการ
+              </button>
+            </div>
+          </header>
+          {hasBotData && showIntakeDetails && currentRoom && currentRoom.intake_data && (
             <section className="line-intake-card" aria-label="ข้อมูลสรุปจากบอท">
               <div className="line-intake-card-head">
                 <span className="line-intake-icon" aria-hidden="true">🤖</span>
                 <h4>ข้อมูลสรุปจาก LINE Bot Intake</h4>
                 <span className="line-intake-badge completed">ข้อมูลครบ</span>
+                <button
+                  type="button"
+                  className="line-intake-close-btn"
+                  onClick={() => setShowIntakeDetails(false)}
+                  aria-label="ปิดข้อมูลสรุป"
+                >
+                  ✕
+                </button>
               </div>
               <div className="line-intake-grid">
                 <div className="line-intake-item">
@@ -199,7 +260,7 @@ export default function LineInbox({ onCreateJob }: LineInboxProps = {}) {
                     });
                   }}
                 >
-                  ➕ สร้างเป็นงานบริการ
+                  ➕ นำข้อมูลนี้ไปเปิดใบงาน
                 </button>
                 <button
                   type="button"

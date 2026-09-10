@@ -31,7 +31,7 @@ export async function GET(request:Request) {
       const selectCols = withSender
         ? 'id,conversation_id,kind,text,metadata,unsent,sent_at,sender'
         : 'id,conversation_id,kind,text,metadata,unsent,sent_at';
-      let q = database().from('line_messages').select(selectCols as any)
+      let q = database().from('line_messages').select(selectCols)
         .eq('conversation_id',id).order('sent_at',{ascending:false}).order('id',{ascending:false}).limit(51);
       if (cursorData) {
         const before = z.coerce.number().int().positive().safe().parse(params.get('before'));

@@ -52,21 +52,23 @@ test('End-to-End Simulation: Customer Chat & Admin Direct Reply Cycle', async ()
   const origFetch = global.fetch;
 
   let capturedUrl = '';
-  let capturedBody: any = null;
+  let capturedBody: { to?: string; messages?: Array<{ type: string; text: string }> } | null = null;
 
   global.fetch = (async (url: string | URL | Request, init?: RequestInit) => {
     capturedUrl = String(url);
     capturedBody = JSON.parse(String(init?.body || '{}'));
     return new Response(JSON.stringify({}), { status: 200 });
-  }) as any;
+  }) as typeof fetch;
 
   try {
     const adminReplyText = 'สวัสดีครับคุณสมชาย ช่างจากร้าน 8bit รับเรื่องแล้วครับ มีอาการอย่างไรบ้างครับ?';
     const pushRes = await sendLinePushMessage(conversation.line_user_id, adminReplyText);
     assert.equal(pushRes.ok, true);
     assert.equal(capturedUrl, 'https://api.line.me/v2/bot/message/push');
-    assert.equal(capturedBody.to, 'Ucustomer999');
-    assert.equal(capturedBody.messages[0].text, adminReplyText);
+    const body = capturedBody as { to?: string; messages?: Array<{ type: string; text: string }> } | null;
+    assert.ok(body);
+    assert.equal(body.to, 'Ucustomer999');
+    assert.equal(body.messages?.[0].text, adminReplyText);
 
     // 3. System persists admin message with sender = 'shop'
     const shopMessage: ChatMessage = {

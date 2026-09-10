@@ -79,3 +79,21 @@ test('sendLineReply returns false when credentials or tokens are missing', async
   assert.equal(result, false);
 });
 
+test('initial message with symptoms captures issue_description in awaiting_device', () => {
+  const result = evaluateBotTransition('new', {}, 'เปิดไม่ติดครับ ช่วยดูหน่อย');
+  assert.equal(result.nextStatus, 'awaiting_device');
+  assert.equal(result.nextData.issue_description, 'เปิดไม่ติดครับ ช่วยดูหน่อย');
+  assert.match(result.replyText!, /เปิดไม่ติดครับ/);
+  assert.match(result.replyText!, /เลือกประเภทอุปกรณ์/);
+});
+
+test('sending symptom in awaiting_device does not repeat welcome greeting', () => {
+  const result = evaluateBotTransition('awaiting_device', { issue_description: 'เปิดไม่ติดครับ' }, 'เมื่อวานยังเล่นได้อยู่เลยครับ');
+  assert.equal(result.nextStatus, 'awaiting_device');
+  assert.equal(result.nextData.issue_description, 'เปิดไม่ติดครับ\nเมื่อวานยังเล่นได้อยู่เลยครับ');
+  assert.doesNotMatch(result.replyText!, /ยินดีต้อนรับสู่ 8bit/);
+  assert.match(result.replyText!, /ช่างบันทึกอาการ/);
+  assert.match(result.replyText!, /เมื่อวานยังเล่นได้อยู่เลยครับ/);
+  assert.ok(result.quickReplyOptions?.some(o => o.text === 'ติดต่อช่าง'));
+});
+
