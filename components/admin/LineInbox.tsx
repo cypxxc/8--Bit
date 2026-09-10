@@ -162,11 +162,11 @@ export default function LineInbox({ onCreateJob }: LineInboxProps = {}) {
               <button key={c.id} onClick={()=>select(c)} className="line-room" aria-pressed={selectedId===c.id}>
                 <span className="line-avatar" aria-hidden="true">{(c.display_name||'L').slice(0,1)}</span>
                 <span className="line-room-text">
-                  <div className="line-room-title">
+                  <span className="line-room-title">
                     <strong>{customerName(c)}</strong>
                     {c.intake_status === 'completed' && roomHasData && <span className="line-intake-badge completed">🤖 ข้อมูลครบ</span>}
                     {c.intake_status?.startsWith('awaiting_') && <span className="line-intake-badge pending">บอทถามอยู่</span>}
-                  </div>
+                  </span>
                   <span className="admin-muted">บัญชี …{c.line_user_id.slice(-8)}</span>
                   <span>{c.preview}</span>
                   <small>{formatDate(c.last_message_at)}</small>
