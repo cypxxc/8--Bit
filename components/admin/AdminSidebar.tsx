@@ -29,15 +29,27 @@ export default function AdminSidebar({ tab, email, onSelect, onLogout }: {
       </div>
       <p className="admin-sidebar-label">เมนูจัดการร้าน</p>
       <nav aria-label={mobile ? "เมนูหลังบ้านบนมือถือ" : "เมนูหลังบ้าน"} className="admin-sidebar-nav">
-        {ADMIN_SECTIONS.map(({ id, label, icon: Icon }) => <button key={id} aria-current={tab === id ? "page" : undefined}
-          onClick={() => { onSelect(id); close(); }}><Icon size={19} aria-hidden="true" /><span>{label}</span></button>)}
+        {ADMIN_SECTIONS.map(({ id, label, icon: Icon }) => {
+          const isActive = tab === id;
+          return (
+            <button
+              key={id}
+              aria-current={isActive ? "page" : undefined}
+              onClick={() => { onSelect(id); close(); }}
+            >
+              {isActive && <span className="admin-nav-led" aria-hidden="true" />}
+              <Icon size={18} aria-hidden="true" />
+              <span>{label}</span>
+            </button>
+          );
+        })}
       </nav>
       <div className="admin-sidebar-links"><p className="admin-sidebar-label">ช่องทางของร้าน</p>
-        <a href="/" target="_blank" rel="noreferrer"><Monitor size={18} aria-hidden="true" />ดูหน้าร้าน<ExternalLink size={14} aria-hidden="true" /></a>
-        <a href="https://manager.line.biz/" target="_blank" rel="noreferrer"><MessageSquare size={18} aria-hidden="true" />LINE OA Manager<ExternalLink size={14} aria-hidden="true" /></a>
+        <a href="/" target="_blank" rel="noreferrer"><Monitor size={17} aria-hidden="true" />ดูหน้าร้าน<ExternalLink size={13} aria-hidden="true" /></a>
+        <a href="https://manager.line.biz/" target="_blank" rel="noreferrer"><MessageSquare size={17} aria-hidden="true" />LINE OA Manager<ExternalLink size={13} aria-hidden="true" /></a>
       </div>
       <footer className="admin-sidebar-account"><span>บัญชีเจ้าของร้าน</span><p>{email}</p>
-        <button onClick={onLogout}><LogOut size={17} aria-hidden="true" />ออกจากระบบ</button>
+        <button onClick={onLogout}><LogOut size={16} aria-hidden="true" />ออกจากระบบ</button>
       </footer>
     </>;
   }
