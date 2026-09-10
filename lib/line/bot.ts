@@ -194,8 +194,8 @@ export function buildLineReplyPayload(transition: BotTransitionResult) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function sendLineReply(replyToken: string, messages: any[]): Promise<boolean> {
-  const token = process.env.LINE_CHANNEL_ACCESS_TOKEN?.trim();
+export async function sendLineReply(replyToken: string, messages: any[], tokenOverride?: string): Promise<boolean> {
+  const token = (tokenOverride || (typeof process !== 'undefined' ? process.env?.LINE_CHANNEL_ACCESS_TOKEN : '') || '').trim();
   if (!token || !replyToken || !messages.length) return false;
 
   try {
