@@ -71,6 +71,8 @@ export default function AdminApp() {
   const [jobPrefill, setJobPrefill] = useState<Partial<Job> | null>(null);
   const [retrying, setRetrying] = useState("");
   const [group, setGroup] = useState("");
+  const [showNewService, setShowNewService] = useState(false);
+  const [newServiceBusy, setNewServiceBusy] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
 
   useEffect(() => {
@@ -194,6 +196,30 @@ export default function AdminApp() {
     });
     setEditing(null);
   };
+
+  async function handleCreateService(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setNewServiceBusy(true);
+    setError("");
+    const f = new FormData(e.currentTarget);
+    try {
+      await api("/api/admin/services", "POST", {
+        group_id: f.get("group_id"),
+        name: f.get("name"),
+        description: f.get("description") || "",
+        price: f.get("price") === "" ? null : Number(f.get("price")),
+        active: f.get("active") === "on",
+      });
+      sound.playPowerUp();
+      setMessage("เพิ่มบริการใหม่ลงในแคตตาล็อกแล้ว");
+      setShowNewService(false);
+      void refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "เพิ่มบริการไม่สำเร็จ");
+    } finally {
+      setNewServiceBusy(false);
+    }
+  }
 
   if (!email) {
     return (
@@ -393,23 +419,80 @@ export default function AdminApp() {
                 การเปลี่ยนแปลงจะแสดงผลบนหน้าเว็บไซต์ทันทีเมื่อบันทึก
               </p>
             </div>
-            <select
-              style={{ maxWidth: 260 }}
-              aria-label="กรองหมวดบริการ"
-              value={group}
-              onChange={(e) => {
-                sound.playSelect();
-                setGroup(e.target.value);
-              }}
-            >
-              <option value="">ทุกหมวดบริการ</option>
-              {SERVICE_GROUPS.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.label}
-                </option>
-              ))}
-            </select>
+            <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+              <select
+                style={{ maxWidth: 260 }}
+                aria-label="กรองหมวดบริการ"
+                value={group}
+                onChange={(e) => {
+                  sound.playSelect();
+                  setGroup(e.target.value);
+                }}
+              >
+                <option value="">ทุกหมวดบริการ</option>
+                {SERVICE_GROUPS.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.label}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                className="admin-button primary"
+                onClick={() => {
+                  sound.playClick();
+                  setShowNewService((prev) => !prev);
+                }}
+              >
+                {showNewService ? "▲ ปิดฟอร์ม" : "➕ เพิ่มบริการใหม่"}
+              </button>
+            </div>
           </div>
+
+          {showNewService && (
+            <form className="admin-panel admin-form admin-service mb-6" onSubmit={handleCreateService} style={{ border: "2px solid #39ff14", boxShadow: "0 0 15px rgba(57, 255, 20, 0.2)" }}>
+              <h3 style={{ margin: "0 0 12px 0", color: "#39ff14", fontSize: "14px" }}>➕ เพิ่มบริการใหม่ลงในแคตตาล็อก</h3>
+              <div className="admin-cols">
+                <label>
+                  หมวดบริการ
+                  <select name="group_id" required defaultValue={group || "software"}>
+                    {SERVICE_GROUPS.map((g) => (
+                      <option key={g.id} value={g.id}>
+                        {g.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  ชื่อบริการ
+                  <input name="name" required maxLength={200} placeholder="เช่น ติดตั้งโปรแกรมเฉพาะทาง..." />
+                </label>
+              </div>
+              <label>
+                รายละเอียดที่แสดงบนเว็บ
+                <textarea name="description" rows={2} maxLength={1000} placeholder="อธิบายรายละเอียดขอบเขตงานหรือเงื่อนไข..." />
+              </label>
+              <div className="admin-cols">
+                <label>
+                  ราคาเริ่มต้น (เว้นว่าง = สอบถาม)
+                  <input name="price" type="number" min="0" max="99999999" step="0.01" placeholder="300" />
+                </label>
+                <label className="admin-toggle-label" style={{ alignSelf: "center" }}>
+                  <input type="checkbox" name="active" defaultChecked />
+                  <span>เปิดรับบริการทันที</span>
+                </label>
+              </div>
+              <div className="admin-actions" style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
+                <button className="admin-button primary" disabled={newServiceBusy} type="submit">
+                  {newServiceBusy ? "กำลังบันทึก…" : "➕ บันทึกบริการใหม่"}
+                </button>
+                <button className="admin-button" type="button" onClick={() => setShowNewService(false)}>
+                  ยกเลิก
+                </button>
+              </div>
+            </form>
+          )}
+
           <div className="admin-services">
             {services
               .filter((s) => !group || s.group_id === group)
@@ -420,6 +503,11 @@ export default function AdminApp() {
                   onSaved={() => {
                     sound.playVictory();
                     setMessage("บันทึกบริการแล้ว");
+                    void refresh();
+                  }}
+                  onDeleted={() => {
+                    sound.playLaser();
+                    setMessage(`ลบบริการ "${s.name}" ออกจากแคตตาล็อกแล้ว`);
                     void refresh();
                   }}
                 />

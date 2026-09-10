@@ -5,13 +5,16 @@ import type { ServiceRecord } from "@/lib/backend/types";
 export default function ServiceEditor({
   service,
   onSaved,
+  onDeleted,
 }: {
   service: ServiceRecord;
   onSaved: () => void;
+  onDeleted?: () => void;
 }) {
   const [busy, setBusy] = useState(false),
     [message, setMessage] = useState(""),
     [failed, setFailed] = useState(false);
+
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
@@ -36,6 +39,24 @@ export default function ServiceEditor({
       setBusy(false);
     }
   }
+
+  async function remove() {
+    const confirmText = `ยืนยันการลบบริการ "${service.name}" หรือไม่?\nการลบจะมีผลบนหน้าเว็บไซต์ทันทีและไม่สามารถย้อนกลับได้`;
+    if (!window.confirm(confirmText)) return;
+
+    setBusy(true);
+    setMessage("");
+    try {
+      await api("/api/admin/services", "DELETE", { id: service.id });
+      setFailed(false);
+      onDeleted?.();
+    } catch (e) {
+      setFailed(true);
+      setMessage(e instanceof Error ? e.message : "ลบไม่สำเร็จ");
+      setBusy(false);
+    }
+  }
+
   return (
     <form className="admin-panel admin-form admin-service" onSubmit={save} method="post">
       <label>
@@ -68,13 +89,13 @@ export default function ServiceEditor({
             defaultValue={service.price ?? ""}
           />
         </label>
-        <label style={{ alignSelf: "center" }}>
+        <label className="admin-toggle-label" style={{ alignSelf: "center" }}>
           <input
             type="checkbox"
             name="active"
             defaultChecked={service.active}
-          />{" "}
-          เปิดรับบริการ
+          />
+          <span>เปิดรับบริการ</span>
         </label>
       </div>
       {message && (
@@ -82,9 +103,17 @@ export default function ServiceEditor({
           {message}
         </p>
       )}
-      <div className="admin-actions">
-        <button className="admin-button" disabled={busy}>
-          {busy ? "กำลังบันทึก…" : "บันทึกบริการ"}
+      <div className="admin-actions" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", marginTop: "14px", gap: "8px" }}>
+        <button className="admin-button primary" disabled={busy} type="submit">
+          {busy ? "กำลังบันทึก…" : "💾 บันทึกบริการ"}
+        </button>
+        <button
+          type="button"
+          className="admin-button danger"
+          disabled={busy}
+          onClick={remove}
+        >
+          🗑️ ลบบริการ
         </button>
       </div>
     </form>
