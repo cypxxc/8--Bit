@@ -43,12 +43,12 @@ const STATUS_ICONS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  pending: "bg-[#0c4a6e] text-[#7dd3fc] border-[#38bdf8]",
-  received: "bg-[#1e3a8a] text-[#bfdbfe] border-[#60a5fa]",
-  working: "bg-[#713f12] text-[#fde047] border-[#facc15]",
-  ready: "bg-[#064e3b] text-[#86efac] border-[#34d399]",
-  delivered: "bg-[#1e293b] text-[#cbd5e1] border-[#64748b]",
-  cancelled: "bg-[#450a0a] text-[#fca5a5] border-[#f87171]",
+  pending: "bg-[#082032] text-[#38bdf8] border-[#0284c7]",
+  received: "bg-[#161b38] text-[#a5b4fc] border-[#6366f1]",
+  working: "bg-[#2e1d08] text-[#fbbf24] border-[#d97706]",
+  ready: "bg-[#062c1e] text-[#34d399] border-[#059669]",
+  delivered: "bg-[#0f172a] text-[#94a3b8] border-[#334155]",
+  cancelled: "bg-[#2d0e0e] text-[#f87171] border-[#dc2626]",
 };
 
 export default function AdminApp() {
@@ -253,29 +253,32 @@ export default function AdminApp() {
       </header>
 
       {/* Arcade Stat Pods Grid */}
-      {tab === "jobs" && <div className="admin-grid">
-        {Object.entries(JOB_STATUSES).map(([key, label]) => {
-          const isActive = tab === "jobs" && status === key;
-          return (
-            <button
-              className={`admin-stat ${isActive ? "ring-2 ring-[#00f0ff] !border-[#00f0ff]" : ""}`}
-              data-status={key}
-              key={key}
-              onClick={() => {
-                sound.playSelect();
-                setTab("jobs");
-                setStatus(key);
-                setPage(0);
-              }}
-            >
-              <span>
-                {STATUS_ICONS[key] || "●"} {label}
-              </span>
-              <strong>{counts[key] ?? 0}</strong>
-            </button>
-          );
-        })}
-      </div>}
+      {tab === "jobs" && (
+        <div className="admin-grid" role="region" aria-label="สถิติสถานะงาน">
+          {Object.entries(JOB_STATUSES).map(([key, label]) => {
+            const isActive = tab === "jobs" && status === key;
+            return (
+              <button
+                className={`admin-stat ${isActive ? "is-active" : ""}`}
+                aria-pressed={isActive}
+                data-status={key}
+                key={key}
+                onClick={() => {
+                  sound.playSelect();
+                  setTab("jobs");
+                  setStatus(key);
+                  setPage(0);
+                }}
+              >
+                <span>
+                  <span aria-hidden="true">{STATUS_ICONS[key] || "●"}</span> {label}
+                </span>
+                <strong>{counts[key] ?? 0}</strong>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Alert Banners */}
       {error && (
@@ -362,7 +365,7 @@ export default function AdminApp() {
           ) : (
             <div className="admin-list">
               {jobs.map((job) => {
-                const badgeColor = STATUS_COLORS[job.status] || "bg-[#1e293b] text-white";
+                const badgeColor = STATUS_COLORS[job.status] || "bg-[#0f172a] text-[#cbd5e1] border-[#334155]";
                 return (
                   <button
                     className="admin-job"
@@ -375,24 +378,24 @@ export default function AdminApp() {
                   >
                     <div>
                       <p className="admin-kicker">
-                        <span className="text-[#00f0ff]">{job.ticket_code}</span> •{" "}
+                        <span className="text-[#38bdf8]">{job.ticket_code}</span> •{" "}
                         <span>{job.source === "web" ? "🌐 เว็บไซต์" : "🏪 หน้าร้าน"}</span>
                       </p>
                       <h3>{job.customer_name}</h3>
                       <p className="text-sm text-[#cbd5e1]">
                         {job.service_names?.length ? job.service_names.join(" • ") : "ตรวจเช็กอาการทั่วไป"}
                       </p>
-                      <p className="admin-muted">
+                      <p className="admin-muted text-xs sm:text-sm">
                         💻 {job.device_type} {job.device_model ? `(${job.device_model})` : ""} • 📞 {job.phone}
                       </p>
                     </div>
 
                     <div className="text-right flex flex-col justify-between items-end">
                       <span className={`admin-badge border ${badgeColor}`}>
-                        {STATUS_ICONS[job.status]} {JOB_STATUSES[job.status]}
+                        <span aria-hidden="true">{STATUS_ICONS[job.status]}</span> {JOB_STATUSES[job.status]}
                       </span>
-                      <p className="admin-muted text-xs">{formatDate(job.created_at)}</p>
-                      <p className="font-press-start text-xs sm:text-sm text-[#39ff14]">
+                      <p className="admin-muted text-xs font-mono">{formatDate(job.created_at)}</p>
+                      <p className="admin-job-price">
                         {job.quoted_price === null
                           ? "ยังไม่ระบุราคา"
                           : `฿${Number(job.quoted_price).toLocaleString("th-TH")}`}
@@ -539,7 +542,7 @@ export default function AdminApp() {
                 <article className="admin-panel" key={n.id}>
                   <div className="flex items-center justify-between gap-4 mb-2 flex-wrap">
                     <div>
-                      <h3 className="font-press-start text-xs text-[#00f0ff]">
+                      <h3 className="font-press-start text-xs text-[#38bdf8]">
                         {n.service_requests?.ticket_code || "TICKET"}
                       </h3>
                       <p className="text-white font-semibold">
@@ -588,7 +591,7 @@ export default function AdminApp() {
           >
             ◀ หน้าก่อนหน้า
           </button>
-          <span className="font-press-start text-xs text-[#94a3b8]">
+          <span className="font-press-start text-xs text-[#94a3b8] tabular-nums">
             PAGE {page + 1} • {count} ITEMS
           </span>
           <button

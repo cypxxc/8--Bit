@@ -518,65 +518,128 @@
   margin-bottom: 24px;
 }
 
+@media (max-width: 1024px) {
+  .admin-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+}
+
+/* 16-Bit HUD Monitor Gauge Stat Pods */
 .admin-stat {
-  background: var(--panel);
-  border: 1px solid var(--line-frame);
+  position: relative;
+  background: var(--panel, #0c1322);
+  border: 1px solid var(--line-frame, #1e2a3f);
   box-shadow: 
-    inset 1px 1px 0 var(--line-highlight),
-    inset -1px -1px 0 var(--line-shadow),
+    inset 1px 1px 0 var(--line-highlight, #283b58),
+    inset -1px -1px 0 var(--line-shadow, #05080f),
     2px 2px 0 #000000;
-  padding: 12px 14px;
+  padding: 12px 14px 14px;
   text-align: left;
   cursor: pointer;
-  transition: all 0.15s ease;
-  position: relative;
+  transition: all 0.12s ease;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .admin-stat:hover {
-  background: var(--panel-elevated);
-  border-color: var(--neon-cyan);
-  transform: translateY(-1px);
+  background: var(--panel-elevated, #131d32);
+  border-color: var(--neon-cyan, #38bdf8);
+  transform: translateY(-2px);
 }
 
 .admin-stat:active {
-  transform: translate(1px, 1px);
+  transform: translateY(1px);
   box-shadow: 
-    inset 1px 1px 0 var(--line-shadow),
-    inset -1px -1px 0 var(--line-highlight),
-    0 0 0 #000000;
+    inset 1px 1px 0 var(--line-shadow, #05080f),
+    inset -1px -1px 0 var(--line-highlight, #283b58),
+    1px 1px 0 #000000;
+}
+
+.admin-stat.is-active,
+.admin-stat[aria-pressed="true"] {
+  background: #111a2e;
+  border-color: var(--stat-color, var(--neon-cyan, #38bdf8));
+  box-shadow: 
+    inset 1px 1px 0 #05080f,
+    inset -1px -1px 0 var(--line-highlight, #283b58),
+    inset 0 0 12px rgba(56, 189, 248, 0.15),
+    1px 1px 0 #000000;
+  transform: translateY(1px);
 }
 
 .admin-stat span {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   color: #94a3b8;
   font-size: 12px;
   font-weight: 600;
-  margin-bottom: 4px;
+  line-height: 1.3;
 }
 
 .admin-stat strong {
   display: block;
   font-family: var(--font-press-start), monospace;
-  font-size: 24px;
-  color: var(--pixel-green);
-  text-shadow: 0 0 8px rgba(57, 255, 20, 0.4);
+  font-size: 20px;
+  line-height: 1.2;
+  margin-top: 8px;
+  color: var(--stat-color, var(--neon-cyan, #38bdf8));
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.5px;
 }
 
-/* Stat Cards Status Highlight Variants */
-.admin-stat[data-status="pending"] strong {
-  color: var(--pixel-cyan);
-  text-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
+/* Micro LED bar indicator at bottom of stat pod */
+.admin-stat::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--stat-color, #1e2a3f);
+  opacity: 0.65;
+  transition: opacity 0.15s ease, height 0.15s ease, box-shadow 0.15s ease;
 }
-.admin-stat[data-status="working"] strong {
-  color: var(--pixel-amber);
-  text-shadow: 0 0 8px rgba(250, 204, 21, 0.4);
+
+.admin-stat:hover::after {
+  opacity: 1;
+  box-shadow: 0 0 6px var(--stat-color, var(--neon-cyan, #38bdf8));
 }
-.admin-stat[data-status="ready"] strong {
-  color: var(--pixel-green);
+
+.admin-stat.is-active::after,
+.admin-stat[aria-pressed="true"]::after {
+  opacity: 1;
+  height: 4px;
+  box-shadow: 0 0 8px var(--stat-color, var(--neon-cyan, #38bdf8));
 }
-.admin-stat[data-status="cancelled"] strong {
-  color: var(--pixel-red);
+
+/* 16-Bit Crisp Status Color Tokens for Stat Pods */
+.admin-stat[data-status="pending"] {
+  --stat-color: var(--neon-cyan, #38bdf8);
+}
+.admin-stat[data-status="received"] {
+  --stat-color: var(--neon-indigo, #818cf8);
+}
+.admin-stat[data-status="working"] {
+  --stat-color: var(--neon-amber, #f59e0b);
+}
+.admin-stat[data-status="ready"] {
+  --stat-color: var(--neon-emerald, #10b981);
+}
+.admin-stat[data-status="delivered"] {
+  --stat-color: #94a3b8;
+}
+.admin-stat[data-status="cancelled"] {
+  --stat-color: var(--neon-red, #ef4444);
 }
 
 /* Tab Bar Navigation (Arcade Switchboard) */
@@ -586,61 +649,79 @@
   flex-wrap: wrap;
   margin: 22px 0;
   padding: 8px;
-  background: #090e1a;
-  border: 3px solid #1e293b;
-  box-shadow: 0 0 0 2px #000, 3px 3px 0 0 #000;
+  background: var(--panel-recessed, #060911);
+  border: 1px solid var(--line-frame, #1e2a3f);
+  box-shadow: 
+    inset 1px 1px 0 var(--line-shadow, #05080f),
+    inset -1px -1px 0 var(--line-highlight, #283b58),
+    2px 2px 0 #000000;
 }
 
 .admin-tabs .admin-button {
-  background: #0f172a;
-  border-color: #334155;
+  background: #182236;
+  border-color: #000000;
   color: #94a3b8;
 }
 
 .admin-tabs .admin-button[aria-pressed="true"] {
-  background: #1e3a8a;
-  color: #ffffff;
-  border-color: #60a5fa;
+  background: #0d1a2d;
+  color: var(--neon-cyan, #38bdf8);
+  border: 1px solid #1e3a5f;
   box-shadow: 
-    inset -3px -3px 0 0 #172554,
-    inset 3px 3px 0 0 #93c5fd,
-    2px 2px 0 0 #000;
-  text-shadow: 0 0 6px rgba(96, 165, 250, 0.6);
+    inset 1px 1px 0 rgba(56, 189, 248, 0.2),
+    inset -1px -1px 0 #05080f,
+    1px 1px 0 #000000;
 }
 
-/* Toolbar & Search Bar */
+/* Toolbar & Search Bar (16-bit Recessed Container) */
 .admin-toolbar {
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) 200px auto;
+  grid-template-columns: minmax(180px, 1fr) 220px auto;
   gap: 12px;
-  margin-bottom: 20px;
-  background: #090e1a;
-  padding: 12px;
-  border: 2px solid #1e293b;
-  box-shadow: 2px 2px 0 #000;
+  align-items: center;
+  margin-bottom: 22px;
+  background: var(--panel, #0c1322);
+  border: 1px solid var(--line-frame, #1e2a3f);
+  box-shadow: 
+    inset 1px 1px 0 var(--line-highlight, #283b58),
+    inset -1px -1px 0 var(--line-shadow, #05080f),
+    2px 2px 0 #000000;
+  padding: 12px 14px;
 }
 
-/* Inputs, Selects, Textareas (8-Bit Terminal Style) */
-.admin-shell input,
+@media (max-width: 768px) {
+  .admin-toolbar {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 16-Bit Recessed Inputs, Selects, Textareas */
+.admin-shell input:not([type="checkbox"]):not([type="radio"]),
 .admin-shell select,
 .admin-shell textarea {
   width: 100%;
-  padding: 10px 14px;
-  color: #ffffff;
-  background: #05080e;
-  border: 2px solid #334155;
-  box-shadow: inset 2px 2px 0 0 #000;
+  padding: 9px 12px;
+  min-height: 38px;
+  color: #f1f5f9;
+  background: var(--panel-recessed, #060911);
+  border: 1px solid #24344d;
+  box-shadow: 
+    inset 1px 1px 0 #000000,
+    inset -1px -1px 0 #131c2c;
   font-family: inherit;
   font-size: 14px;
   outline: none;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
 }
 
-.admin-shell input:focus,
+.admin-shell input:not([type="checkbox"]):not([type="radio"]):focus,
 .admin-shell select:focus,
 .admin-shell textarea:focus {
-  border-color: var(--pixel-cyan);
-  box-shadow: inset 2px 2px 0 0 #000, 0 0 8px rgba(0, 240, 255, 0.4);
+  border-color: var(--neon-cyan, #38bdf8);
+  box-shadow: 
+    inset 1px 1px 0 #000000,
+    inset -1px -1px 0 #131c2c,
+    0 0 0 2px rgba(56, 189, 248, 0.25);
 }
 
 .admin-shell label {
@@ -651,13 +732,13 @@
   margin-bottom: 4px;
 }
 
-.admin-shell label > input,
+.admin-shell label > input:not([type="checkbox"]):not([type="radio"]),
 .admin-shell label > select,
 .admin-shell label > textarea {
   margin-top: 6px;
 }
 
-/* Job List (Work-Order Dockets) */
+/* Job List (Clean Work-Order Dockets) */
 .admin-list {
   display: grid;
   gap: 12px;
@@ -668,52 +749,77 @@
   grid-template-columns: 1fr auto;
   gap: 16px;
   width: 100%;
-  background: #090e1a;
-  border: 3px solid #1e293b;
-  box-shadow: 0 0 0 2px #000, 4px 4px 0 0 #000;
-  padding: 18px 20px;
+  background: var(--panel, #0c1322);
+  border: 1px solid var(--line-frame, #1e2a3f);
+  box-shadow: 
+    inset 1px 1px 0 var(--line-highlight, #283b58),
+    inset -1px -1px 0 var(--line-shadow, #05080f),
+    2px 2px 0 #000000;
+  padding: 14px 18px;
   text-align: left;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.12s ease;
+  position: relative;
 }
 
 .admin-job:hover {
-  background: #10182b;
-  border-color: var(--line-highlight);
-  transform: translateX(4px);
+  background: var(--panel-elevated, #131d32);
+  border-color: var(--neon-cyan, #38bdf8);
+  transform: translateX(2px);
+}
+
+.admin-job:active {
+  transform: translate(2px, 1px);
+  box-shadow: 
+    inset 1px 1px 0 var(--line-shadow, #05080f),
+    inset -1px -1px 0 var(--line-highlight, #283b58),
+    1px 1px 0 #000000;
 }
 
 .admin-job h3 {
-  font-size: 17px;
-  margin: 4px 0;
+  font-size: 16px;
+  font-weight: 700;
+  margin: 4px 0 2px 0;
   color: #ffffff;
+  line-height: 1.3;
 }
 
 .admin-job .admin-kicker {
-  font-size: 11px;
+  font-size: 10px;
   margin-bottom: 2px;
+  letter-spacing: 0.5px;
 }
 
-/* Status Badge Pill */
-.admin-badge {
-  display: inline-block;
+.admin-job-price {
   font-family: var(--font-press-start), monospace;
-  font-size: 10px;
-  color: #ffffff;
-  background: #1e293b;
-  border: 2px solid #334155;
-  box-shadow: 2px 2px 0 #000;
-  padding: 4px 10px;
+  font-size: 12px;
+  color: #34d399;
+  font-variant-numeric: tabular-nums;
+  margin-top: 4px;
+}
+
+@media (min-width: 640px) {
+  .admin-job-price {
+    font-size: 13px;
+  }
+}
+
+/* 16-Bit Status Badge Pill */
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-press-start), monospace;
+  font-size: 9px;
+  line-height: 1;
+  padding: 5px 8px;
+  border: 1px solid var(--line-frame, #1e2a3f);
+  background: #0f172a;
+  color: #cbd5e1;
+  box-shadow: 1px 1px 0 #000000;
   letter-spacing: 0.5px;
   white-space: nowrap;
-}
-
-/* Panels & Windows */
-.admin-panel {
-  background: #090e1a;
-  border: 3px solid #1e293b;
-  box-shadow: 0 0 0 2px #000, 4px 4px 0 0 #000;
-  padding: 24px;
+  text-transform: uppercase;
 }
 
 /* Overlay & Modal Drawer */
@@ -924,9 +1030,22 @@ input.admin-checkbox[type="checkbox"] {
   align-items: center;
   gap: 12px;
   margin-top: 24px;
-  background: #090e1a;
+  background: var(--panel, #0c1322);
+  border: 1px solid var(--line-frame, #1e2a3f);
+  box-shadow: 
+    inset 1px 1px 0 var(--line-highlight, #283b58),
+    inset -1px -1px 0 var(--line-shadow, #05080f),
+    2px 2px 0 #000000;
   padding: 12px 16px;
-  border: 2px solid #1e293b;
+  flex-wrap: wrap;
+}
+
+.admin-pages > span {
+  font-family: var(--font-press-start), monospace;
+  font-size: 10px;
+  color: #94a3b8;
+  letter-spacing: 0.5px;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Service Catalog Cards */
