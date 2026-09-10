@@ -36,7 +36,8 @@ export async function POST(request: Request) {
     const now = new Date().toISOString();
 
     // 2. Insert message into line_messages
-    const { data: insertedMsg, error: insertErr } = await database()
+    let insertedMsg: Record<string, unknown> | null = null;
+    const { data: fullInsert, error: insertErr } = await database()
       .from('line_messages')
       .insert({
         conversation_id: parsed.roomId,
@@ -46,9 +47,26 @@ export async function POST(request: Request) {
         sent_at: now,
       })
       .select('id, conversation_id, kind, text, metadata, unsent, sent_at, sender')
-      .single();
+      .maybeSingle();
 
-    if (insertErr) throw insertErr;
+    if (insertErr && (insertErr.code === '42703' || insertErr.message?.includes('sender'))) {
+      const { data: fallbackInsert, error: fallbackErr } = await database()
+        .from('line_messages')
+        .insert({
+          conversation_id: parsed.roomId,
+          kind: 'text',
+          text: parsed.text,
+          sent_at: now,
+        })
+        .select('id, conversation_id, kind, text, metadata, unsent, sent_at')
+        .single();
+      if (fallbackErr) throw fallbackErr;
+      insertedMsg = { ...(fallbackInsert as Record<string, unknown>), sender: 'shop' };
+    } else if (insertErr) {
+      throw insertErr;
+    } else {
+      insertedMsg = fullInsert as Record<string, unknown>;
+    }
 
     // 3. Update conversation last_message_at and auto handoff intake_status to completed
     const updates: Record<string, unknown> = {
