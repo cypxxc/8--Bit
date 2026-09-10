@@ -27,7 +27,7 @@
 **Interfaces:**
 - Produces: CSS variables and base utility classes for 16-bit stepped bevels (`--panel`, `--panel-elevated`, `--bevel-panel`, `--bevel-button`, `--bevel-input`).
 
-- [ ] **Step 1: Update design tokens and base shell styling in `admin.css`**
+- [x] **Step 1: Update design tokens and base shell styling in `admin.css`**
 Replace heavy 3-4px borders and excessive glow with:
 ```css
 .admin-shell {
@@ -56,7 +56,7 @@ Replace heavy 3-4px borders and excessive glow with:
 }
 ```
 
-- [ ] **Step 2: Define 16-bit stepped bevels for `.admin-panel`, `.admin-button`, and `.admin-stat`**
+- [x] **Step 2: Define 16-bit stepped bevels for `.admin-panel`, `.admin-button`, and `.admin-stat`**
 ```css
 .admin-panel {
   background: var(--panel);
@@ -116,11 +116,11 @@ Replace heavy 3-4px borders and excessive glow with:
 }
 ```
 
-- [ ] **Step 3: Test compilation**
+- [x] **Step 3: Test compilation**
 Run: `npm run build`
 Expected: Build passes with updated base tokens.
 
-- [ ] **Step 4: Commit changes**
+- [x] **Step 4: Commit changes**
 ```bash
 git add app/admin/admin.css
 git commit -m "style: apply 16-bit stepped bevels and clean arcade tokens"
@@ -139,10 +139,10 @@ git commit -m "style: apply 16-bit stepped bevels and clean arcade tokens"
 - Consumes: `ADMIN_SECTIONS`, `tab`, `onSelect`, `onLogout`
 - Produces: Clean 16-bit sidebar with active tab LED pip and refined monitor brand icon.
 
-- [ ] **Step 1: Enhance `AdminSidebar.tsx` with 16-bit CRT brand framing and LED active indicator**
+- [x] **Step 1: Enhance `AdminSidebar.tsx` with 16-bit CRT brand framing and LED active indicator**
 Ensure the brand icon has a crisp stepped border and active tab button includes an active LED indicator (`<span className="admin-nav-led" />`).
 
-- [ ] **Step 2: Update sidebar styles in `admin.css`**
+- [x] **Step 2: Update sidebar styles in `admin.css`**
 Refine `.admin-sidebar`, `.admin-sidebar-brand`, `.admin-sidebar-nav button`, and `.admin-mobile-bar`:
 ```css
 .admin-sidebar {
@@ -174,11 +174,11 @@ Refine `.admin-sidebar`, `.admin-sidebar-brand`, `.admin-sidebar-nav button`, an
 }
 ```
 
-- [ ] **Step 3: Test compilation**
+- [x] **Step 3: Test compilation**
 Run: `npm run build`
 Expected: PASS
 
-- [ ] **Step 4: Commit changes**
+- [x] **Step 4: Commit changes**
 ```bash
 git add components/admin/AdminSidebar.tsx app/admin/admin.css
 git commit -m "style: polish admin sidebar with 16-bit arcade console styling"
