@@ -17,7 +17,7 @@ export async function GET(request:Request) {
     const id = z.string().uuid().parse(params.get('room'));
     const conversation = await room(id);
     Object.assign(conversation,await refreshLineProfile(conversation));
-    let query = database().from('line_messages').select('id,conversation_id,kind,text,metadata,unsent,sent_at')
+    let query = database().from('line_messages').select('id,conversation_id,kind,text,metadata,unsent,sent_at,sender')
       .eq('conversation_id',id).order('sent_at',{ascending:false}).order('id',{ascending:false}).limit(51);
     if (params.has('before')) {
       const before = z.coerce.number().int().positive().safe().parse(params.get('before'));
