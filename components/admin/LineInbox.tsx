@@ -23,6 +23,9 @@ export default function LineInbox({ onCreateJob }: LineInboxProps = {}) {
   const [q,setQ] = useState(''),[page,setPage]=useState(0),[unread,setUnread]=useState(false);
   const [completedOnly, setCompletedOnly] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [replyText, setReplyText] = useState('');
+  const [sendingReply, setSendingReply] = useState(false);
+  const [replyError, setReplyError] = useState('');
   const [before,setBefore]=useState<number|null>(null),[refresh,setRefresh]=useState(0);
   const scroll = useRef<HTMLDivElement>(null);
   const nearBottom = useRef(true);
@@ -67,11 +70,49 @@ export default function LineInbox({ onCreateJob }: LineInboxProps = {}) {
   useEffect(()=>{
     if(nearBottom.current && scroll.current)scroll.current.scrollTop=scroll.current.scrollHeight;
   },[thread]);
-  function select(c:Conversation){setSelected(c);setBefore(null);setThread(null);setError('');nearBottom.current=true;}
+  function select(c:Conversation){setSelected(c);setBefore(null);setThread(null);setError('');setReplyText('');setReplyError('');nearBottom.current=true;}
   function search(e:FormEvent<HTMLFormElement>){e.preventDefault();setPage(0);setQ(String(new FormData(e.currentTarget).get('customer')||''));}
 
   const currentRoom = list?.conversations.find(c => c.id === selectedId) || thread?.conversation || selected;
   const filteredRooms = (list?.conversations || []).filter(c => !completedOnly || c.intake_status === 'completed');
+
+  async function handleSendReply(e?: FormEvent) {
+    if (e) e.preventDefault();
+    const text = replyText.trim();
+    if (!text || sendingReply || !currentRoom) return;
+
+    setSendingReply(true);
+    setReplyError('');
+    try {
+      const res = await api<{ success: boolean; message: ChatMessage }>('/api/admin/inbox/reply', 'POST', {
+        roomId: currentRoom.id,
+        text,
+      });
+
+      if (res.message) {
+        setThread(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            messages: [...prev.messages, res.message],
+          };
+        });
+        nearBottom.current = true;
+      }
+
+      setSelected(prev => (prev && prev.id === currentRoom.id ? { ...prev, intake_status: 'completed' } : prev));
+      setList(prev => prev ? {
+        ...prev,
+        conversations: prev.conversations.map(c => c.id === currentRoom.id ? { ...c, intake_status: 'completed' } : c),
+      } : prev);
+
+      setReplyText('');
+    } catch (err) {
+      setReplyError(err instanceof Error ? err.message : 'ส่งข้อความตอบกลับไม่สำเร็จ');
+    } finally {
+      setSendingReply(false);
+    }
+  }
 
   async function handleResetIntake(roomId: string) {
     if (resetting) return;
@@ -175,12 +216,44 @@ export default function LineInbox({ onCreateJob }: LineInboxProps = {}) {
             {!thread?<p role="status">กำลังโหลดข้อความ…</p>:<>
               {before&&<button className="admin-button" onClick={()=>{setBefore(null);setThread(null);nearBottom.current=true;}}>กลับข้อความล่าสุด</button>}
               {thread.hasMore&&<button className="admin-button" onClick={()=>{setBefore(thread.messages[0].id);setThread(null);nearBottom.current=true;}}>ดูข้อความก่อนหน้า</button>}
-              {thread.messages.map(m=><article key={m.id} className={`line-bubble ${m.unsent?'is-unsent':''}`}>
+              {thread.messages.map(m=><article key={m.id} className={`line-bubble ${m.sender==='shop'?'is-shop':''} ${m.unsent?'is-unsent':''}`}>
+                {m.sender==='shop'&&<span className="line-sender-tag">ช่าง / ทางร้าน</span>}
                 <Message message={m}/><time className="admin-muted" dateTime={m.sent_at}>{formatDate(m.sent_at)}</time>
               </article>)}
             </>}
           </div>
-          <footer className="line-compose-note">ตอบลูกค้าผ่าน <a href="https://manager.line.biz/" target="_blank" rel="noreferrer">LINE OA Manager</a> ในตอนนี้<br/><small>แสดงข้อความใหม่ที่รับหลังเชื่อมต่อ ไม่รวมประวัติเก่าและข้อความที่ร้านส่งจาก OA Manager</small></footer>
+          <footer className="line-compose-box">
+            {replyError && <p className="admin-error line-reply-error" role="alert">{replyError}</p>}
+            <form className="line-compose-form" onSubmit={handleSendReply}>
+              <div className="line-compose-input-row">
+                <textarea
+                  className="line-compose-input"
+                  placeholder="พิมพ์ข้อความตอบกลับลูกค้า... (กด Enter เพื่อส่ง, Shift+Enter เพื่อขึ้นบรรทัดใหม่)"
+                  value={replyText}
+                  rows={2}
+                  disabled={sendingReply}
+                  onChange={e => setReplyText(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      void handleSendReply();
+                    }
+                  }}
+                  aria-label="ข้อความตอบกลับลูกค้า"
+                />
+                <button
+                  type="submit"
+                  className="admin-button primary line-compose-submit-btn"
+                  disabled={sendingReply || !replyText.trim()}
+                >
+                  {sendingReply ? 'กำลังส่ง…' : 'ส่ง ↵'}
+                </button>
+              </div>
+              <p className="line-compose-hint">
+                ข้อความจะส่งตรงเข้า LINE ลูกค้าทันที (LINE Push API) • ตอบฟรีไม่จำกัดโควตาผ่าน <a href="https://manager.line.biz/" target="_blank" rel="noreferrer">LINE OA Manager</a>
+              </p>
+            </form>
+          </footer>
         </>}
       </div>
     </div>
