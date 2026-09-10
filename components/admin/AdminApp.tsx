@@ -453,8 +453,18 @@ export default function AdminApp() {
           </div>
 
           {showNewService && (
-            <form className="admin-panel admin-form admin-service mb-6" onSubmit={handleCreateService} style={{ border: "2px solid #39ff14", boxShadow: "0 0 15px rgba(57, 255, 20, 0.2)" }}>
-              <h3 style={{ margin: "0 0 12px 0", color: "#39ff14", fontSize: "14px" }}>➕ เพิ่มบริการใหม่ลงในแคตตาล็อก</h3>
+            <form className="admin-service-new admin-form" onSubmit={handleCreateService}>
+              <div className="admin-service-new-head">
+                <h3>➕ เพิ่มบริการใหม่ลงในแคตตาล็อก</h3>
+                <button
+                  type="button"
+                  className="admin-button"
+                  style={{ padding: "3px 8px", fontSize: "11px" }}
+                  onClick={() => setShowNewService(false)}
+                >
+                  ✕ ปิด
+                </button>
+              </div>
               <div className="admin-cols">
                 <label>
                   หมวดบริการ

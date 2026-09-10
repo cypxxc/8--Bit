@@ -58,7 +58,19 @@ export default function ServiceEditor({
   }
 
   return (
-    <form className="admin-panel admin-form admin-service" onSubmit={save} method="post">
+    <form className="admin-service admin-form" onSubmit={save} method="post">
+      <div className="admin-service-head">
+        <div className="admin-service-meta">
+          <span className="admin-badge">
+            {service.group_id.toUpperCase()}
+          </span>
+          <span className="admin-service-id">#{service.id}</span>
+        </div>
+        <div className="admin-service-status-pill">
+          <span className={`admin-dot ${service.active ? "is-online" : "is-offline"}`} />
+          <span>{service.active ? "เปิดรับงาน" : "ปิดชั่วคราว"}</span>
+        </div>
+      </div>
       <label>
         ชื่อบริการ
         <input
@@ -87,6 +99,7 @@ export default function ServiceEditor({
             max="99999999"
             step="0.01"
             defaultValue={service.price ?? ""}
+            style={{ fontVariantNumeric: "tabular-nums" }}
           />
         </label>
         <label className="admin-toggle-label" style={{ alignSelf: "center" }}>
@@ -103,7 +116,7 @@ export default function ServiceEditor({
           {message}
         </p>
       )}
-      <div className="admin-actions" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", marginTop: "14px", gap: "8px" }}>
+      <div className="admin-actions">
         <button className="admin-button primary" disabled={busy} type="submit">
           {busy ? "กำลังบันทึก…" : "💾 บันทึกบริการ"}
         </button>

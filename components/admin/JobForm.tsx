@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef, useEffect, type FormEvent } from "react";
 import { api, formatDate } from "./api";
+import { sound } from "@/lib/sound";
 import {
   JOB_STATUSES,
   type Job,
@@ -88,8 +89,17 @@ export default function JobForm({
               {job ? job.customer_name : "เพิ่มงานหน้าร้าน"}
             </h2>
           </div>
-          <button className="admin-button" onClick={onClose} disabled={busy}>
-            ปิด
+          <button
+            type="button"
+            className="admin-button"
+            onClick={() => {
+              sound.playClick();
+              onClose();
+            }}
+            disabled={busy}
+            aria-label="ปิดหน้าต่าง"
+          >
+            ✕ ปิด
           </button>
         </div>
         {error && (
@@ -235,6 +245,7 @@ export default function JobForm({
                     min="0"
                     max="99999999"
                     defaultValue={job.quoted_price ?? ""}
+                    style={{ fontVariantNumeric: "tabular-nums" }}
                   />
                 </label>
               </div>
@@ -266,8 +277,13 @@ export default function JobForm({
                     .filter((s) => s.active)
                     .map((s) => (
                       <label key={s.id}>
-                        <input type="checkbox" name="serviceIds" value={s.id} />
-                        {s.name}
+                        <input
+                          type="checkbox"
+                          name="serviceIds"
+                          value={s.id}
+                          onChange={() => sound.playSelect()}
+                        />
+                        <span>{s.name}</span>
                       </label>
                     ))}
                 </div>
@@ -287,13 +303,26 @@ export default function JobForm({
               </p>
             </>
           )}
-          <button className="admin-button primary" disabled={busy}>
-            {busy
-              ? "กำลังบันทึก…"
-              : job
-                ? "บันทึกการเปลี่ยนแปลง"
-                : "เพิ่มงานหน้าร้าน"}
-          </button>
+          <div className="admin-actions" style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+            <button className="admin-button primary" disabled={busy} type="submit" style={{ flex: 1 }}>
+              {busy
+                ? "กำลังบันทึก…"
+                : job
+                  ? "💾 บันทึกการเปลี่ยนแปลง"
+                  : "➕ เพิ่มงานหน้าร้าน"}
+            </button>
+            <button
+              type="button"
+              className="admin-button"
+              onClick={() => {
+                sound.playClick();
+                onClose();
+              }}
+              disabled={busy}
+            >
+              ยกเลิก
+            </button>
+          </div>
         </form>
       </section>
     </dialog>
