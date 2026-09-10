@@ -176,3 +176,37 @@ export async function sendLineReply(replyToken: string, messages: any[]): Promis
     return false;
   }
 }
+
+export async function sendLinePushMessage(
+  lineUserId: string,
+  text: string
+): Promise<{ ok: boolean; error?: string }> {
+  const token = process.env.LINE_CHANNEL_ACCESS_TOKEN?.trim();
+  if (!token) return { ok: false, error: 'LINE_CHANNEL_ACCESS_TOKEN is missing or empty' };
+  if (!lineUserId?.trim() || !text?.trim()) return { ok: false, error: 'Invalid recipient or empty text' };
+
+  try {
+    const res = await fetch('https://api.line.me/v2/bot/message/push', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        to: lineUserId.trim(),
+        messages: [{ type: 'text', text: text.trim() }],
+      }),
+      signal: AbortSignal.timeout(8000),
+    });
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({} as Record<string, unknown>));
+      const message = (body as { message?: string }).message || `LINE API error ${res.status}`;
+      return { ok: false, error: message };
+    }
+    return { ok: true };
+  } catch (err: unknown) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Network error' };
+  }
+}
+
