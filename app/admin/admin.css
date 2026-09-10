@@ -517,28 +517,87 @@
   white-space: pre-wrap;
 }
 
+/* Custom 20px Retro Checkbox Inputs */
+.admin-checks input[type="checkbox"],
+.line-unread-filter input[type="checkbox"],
+.admin-row input[type="checkbox"],
+input.admin-checkbox[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #334155;
+  background: #05080e;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  box-shadow: 1px 1px 0 #000;
+}
+
+.admin-checks input[type="checkbox"]:hover,
+.line-unread-filter input[type="checkbox"]:hover,
+.admin-row input[type="checkbox"]:hover {
+  border-color: #38bdf8;
+}
+
+.admin-checks input[type="checkbox"]:checked,
+.line-unread-filter input[type="checkbox"]:checked,
+.admin-row input[type="checkbox"]:checked {
+  background: #022c22;
+  border-color: #39ff14;
+  box-shadow: 0 0 8px rgba(57, 255, 20, 0.4);
+}
+
+.admin-checks input[type="checkbox"]:checked::after,
+.line-unread-filter input[type="checkbox"]:checked::after,
+.admin-row input[type="checkbox"]:checked::after {
+  content: "✔";
+  color: #39ff14;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+}
+
 .admin-checks {
   display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 10px;
-  max-height: 260px;
+  max-height: 280px;
   overflow-y: auto;
   border: 2px solid #1e293b;
   background: #05080e;
-  padding: 14px;
+  padding: 12px;
 }
 
 .admin-checks label {
   display: flex;
-  gap: 10px;
   align-items: center;
-  padding: 6px 8px;
-  border: 1px solid transparent;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #0c1220;
+  border: 2px solid #1e293b;
+  box-shadow: 2px 2px 0 #000;
   cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 13px;
+  color: #cbd5e1;
+  user-select: none;
 }
 
 .admin-checks label:hover {
-  background: #0f172a;
-  border-color: #334155;
+  border-color: #38bdf8;
+  background: #141f35;
+  color: #ffffff;
+}
+
+.admin-checks label:has(input:checked) {
+  background: #064e3b;
+  border-color: #34d399;
+  box-shadow: 2px 2px 0 #000, 0 0 10px rgba(52, 211, 153, 0.2);
+  color: #ffffff;
 }
 
 /* Error & Success Notice Banners */
