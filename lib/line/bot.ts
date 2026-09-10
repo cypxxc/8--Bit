@@ -35,13 +35,54 @@ export function evaluateBotTransition(
   const trimmed = text.trim();
   const lower = trimmed.toLowerCase();
 
-  // Reset trigger
-  if (lower === 'เริ่มใหม่' || lower === 'reset' || lower === '/reset') {
+  // 1. Reset / Clear chat commands
+  if (['เริ่มใหม่', 'reset', '/reset', 'ลบแชท', 'ล้างแชท', 'ล้างข้อมูล', 'clear'].includes(lower)) {
     return {
       nextStatus: 'awaiting_device',
       nextData: {},
-      replyText: '🕹️ 8bit Shop Assistant ยินดีต้อนรับครับ!\nเพื่อความรวดเร็ว กรุณาเลือกประเภทอุปกรณ์ของคุณ:',
+      replyText: '🕹️ 8bit Shop Assistant: รีเซ็ตข้อมูลเรียบร้อยครับ!\n\nเพื่อความสะดวกรวดเร็ว กรุณาเลือกประเภทอุปกรณ์ของคุณ เพื่อเริ่มต้นใหม่อีกครั้ง:',
       quickReplyOptions: DEVICE_OPTIONS.map(o => ({ label: o.label, text: o.text })),
+    };
+  }
+
+  // 2. Change / Re-select service category commands
+  if (['เลือกบริการใหม่', 'เปลี่ยนบริการ', 'เลือกงานใหม่', 'เปลี่ยนงาน'].includes(lower)) {
+    if (data.device_type) {
+      return {
+        nextStatus: 'awaiting_service',
+        nextData: { device_type: data.device_type },
+        replyText: `📋 เลือกบริการใหม่สำหรับ (${data.device_type})\nกรุณาเลือกบริการที่ต้องการครับ:`,
+        quickReplyOptions: SERVICE_OPTIONS.map(o => ({ label: o.label, text: o.text })),
+      };
+    }
+    return {
+      nextStatus: 'awaiting_device',
+      nextData: {},
+      replyText: '🕹️ เพื่อเลือกบริการ กรุณาเลือกประเภทอุปกรณ์ของคุณก่อนนะครับ:',
+      quickReplyOptions: DEVICE_OPTIONS.map(o => ({ label: o.label, text: o.text })),
+    };
+  }
+
+  // 3. Contact human technician commands
+  if (['ติดต่อช่าง', 'คุยกับคน', 'แอดมิน', 'โทร', 'ช่าง'].includes(lower)) {
+    return {
+      nextStatus: 'completed',
+      nextData: data,
+      replyText: '🧑‍🔧 ส่งเรื่องให้ช่างแล้วครับ!\nช่างได้รับแจ้งเตือนแล้ว และจะรีบเข้ามาตรวจสอบพร้อมตอบกลับในแชตนี้สักครู่นะครับ ขอบคุณครับ 🙏',
+    };
+  }
+
+  // 4. Menu & Help commands
+  if (['เมนู', 'ช่วยเหลือ', 'help', '/help', 'คำสั่ง'].includes(lower)) {
+    return {
+      nextStatus: status,
+      nextData: data,
+      replyText: '🕹️ เมนูคำสั่งลัด 8bit Shop:\n\n• พิมพ์ "เริ่มใหม่" หรือ "ลบแชท" เพื่อเริ่มต้นใหม่\n• พิมพ์ "เลือกบริการใหม่" เพื่อเปลี่ยนรายการบริการ\n• พิมพ์ "ติดต่อช่าง" เพื่อรอคุยกับช่างโดยตรง\n\nหรือแตะเลือกปุ่มคำสั่งด้านล่างนี้ได้เลยครับ 👇',
+      quickReplyOptions: [
+        { label: '🔄 ลบแชท/เริ่มใหม่', text: 'เริ่มใหม่' },
+        { label: '📋 เลือกบริการใหม่', text: 'เลือกบริการใหม่' },
+        { label: '🧑‍🔧 ติดต่อช่าง', text: 'ติดต่อช่าง' },
+      ],
     };
   }
 
