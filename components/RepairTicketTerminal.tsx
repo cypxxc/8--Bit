@@ -186,11 +186,45 @@ ${submittedTicket.description ? `📝 รายละเอียดเพิ่
                       onClick={() => {sound.playSelect(); setCategory(group.id);}}
                       className={`p-3 border text-sm font-thai transition-transform hover:scale-[1.02] ${category === group.id ? "border-[#39ff14] text-white bg-[#064e3b]" : "border-[#334155] text-[#cbd5e1]"}`}>{group.label}</button>)}
                   </div>
-                  <div className="grid gap-2 bg-[#05080e] p-3 border border-[#1e293b]">
-                    {services.filter(service => service.group_id === category).map(service => <label key={service.id} className="flex gap-3 items-start p-2 text-sm font-thai cursor-pointer">
-                      <input type="checkbox" checked={serviceIds.includes(service.id)} onChange={e => setServiceIds(ids => e.target.checked ? [...ids,service.id] : ids.filter(id => id !== service.id))} className="mt-1 accent-[#39ff14]" />
-                      <span>{service.name}</span>
-                    </label>)}
+                  <div className="grid sm:grid-cols-2 gap-2.5 bg-[#05080e] p-3 border-2 border-[#1e293b]">
+                    {services.filter(service => service.group_id === category).map(service => {
+                      const isSelected = serviceIds.includes(service.id);
+                      return (
+                        <div
+                          key={service.id}
+                          role="checkbox"
+                          aria-checked={isSelected}
+                          tabIndex={0}
+                          onClick={() => {
+                            sound.playSelect();
+                            setServiceIds(ids => isSelected ? ids.filter(id => id !== service.id) : [...ids, service.id]);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === ' ' || e.key === 'Enter') {
+                              e.preventDefault();
+                              sound.playSelect();
+                              setServiceIds(ids => isSelected ? ids.filter(id => id !== service.id) : [...ids, service.id]);
+                            }
+                          }}
+                          className={`group p-3 border-2 text-sm font-thai transition-all cursor-pointer select-none flex items-center gap-3 shadow-[2px_2px_0_#000] active:scale-[0.98] ${
+                            isSelected
+                              ? "border-[#39ff14] text-white bg-[#064e3b] shadow-[2px_2px_0_#000,0_0_10px_rgba(57,255,20,0.25)]"
+                              : "border-[#1e293b] text-[#cbd5e1] bg-[#070b14] hover:border-[#38bdf8] hover:bg-[#0c1220]"
+                          }`}
+                        >
+                          <div
+                            className={`w-6 h-6 flex-shrink-0 border-2 flex items-center justify-center transition-all ${
+                              isSelected
+                                ? "border-[#39ff14] bg-[#022c22] text-[#39ff14] shadow-[0_0_8px_#39ff14]"
+                                : "border-[#334155] bg-[#05080e] group-hover:border-[#38bdf8]"
+                            }`}
+                          >
+                            {isSelected && <span className="font-bold text-sm leading-none select-none">✔</span>}
+                          </div>
+                          <span className="font-medium flex-1 leading-snug">{service.name}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                   {symptoms.length > 0 && <p className="text-sm font-thai text-[#39ff14] mt-3">เลือกแล้ว {symptoms.length} รายการ: {symptoms.join(" • ")}</p>}
                 </div>
