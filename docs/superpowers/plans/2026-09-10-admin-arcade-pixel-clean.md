@@ -197,7 +197,7 @@ git commit -m "style: polish admin sidebar with 16-bit arcade console styling"
 - Consumes: `counts`, `jobs`, `STATUS_ICONS`, `STATUS_COLORS`
 - Produces: 16-bit HUD stat pods, recessed search/filter toolbar, and clean docket job cards.
 
-- [ ] **Step 1: Update Stat Pod styling in `admin.css`**
+- [x] **Step 1: Update Stat Pod styling in `admin.css`**
 Make `.admin-stat` look like an arcade HUD monitor with micro status indicator line and crisp tabular count.
 ```css
 .admin-stat {
@@ -217,7 +217,7 @@ Make `.admin-stat` look like an arcade HUD monitor with micro status indicator l
 }
 ```
 
-- [ ] **Step 2: Update Job Docket Card styling in `admin.css`**
+- [x] **Step 2: Update Job Docket Card styling in `admin.css`**
 Style `.admin-job` with crisp docket headers, clear customer names, tabular price displays, and 16-bit status pills:
 ```css
 .admin-job {
@@ -239,11 +239,11 @@ Style `.admin-job` with crisp docket headers, clear customer names, tabular pric
 }
 ```
 
-- [ ] **Step 3: Run existing tests to verify zero regressions**
+- [x] **Step 3: Run existing tests to verify zero regressions**
 Run: `npm run test`
 Expected: All test suites pass.
 
-- [ ] **Step 4: Commit changes**
+- [x] **Step 4: Commit changes**
 ```bash
 git add components/admin/AdminApp.tsx app/admin/admin.css
 git commit -m "style: upgrade stat pods and job dockets to clean 16-bit HUD"
