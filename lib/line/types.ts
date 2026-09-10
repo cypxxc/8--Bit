@@ -9,6 +9,10 @@ export interface Conversation {
 export interface ChatMessage {
   id:number; conversation_id:string; kind:string; text:string; unsent:boolean;
   metadata:Record<string,unknown>; sent_at:string;
+  sender?: 'customer' | 'shop';
+  line_message_id?: string | null;
+  event_id?: string | null;
+  received_at?: string;
 }
 export const messageLabel = (m: Pick<ChatMessage,'unsent'|'kind'|'text'>) => m.unsent ? 'ลูกค้ายกเลิกส่งข้อความ' :
   m.text || ({image:'รูปภาพ',video:'วิดีโอ',audio:'ข้อความเสียง',file:'ไฟล์แนบ',sticker:'สติกเกอร์',location:'ตำแหน่งที่ตั้ง'}[m.kind] || 'ข้อความประเภทอื่น');

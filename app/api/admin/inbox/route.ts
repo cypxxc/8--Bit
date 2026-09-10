@@ -14,7 +14,7 @@ export async function GET(request:Request) {
       const selectCols = withIntake
         ? 'id,line_user_id,display_name,picture_url,profile_updated_at,last_message_at,unread_count,intake_status,intake_data,line_messages(kind,text,unsent)'
         : 'id,line_user_id,display_name,picture_url,profile_updated_at,last_message_at,unread_count,line_messages(kind,text,unsent)';
-      let qBuilder = database().from('line_conversations').select(selectCols, { count: 'exact' })
+      let qBuilder = database().from('line_conversations').select(selectCols as any, { count: 'exact' })
         .not('last_message_at', 'is', null).order('last_message_at', { ascending: false }).order('id')
         .order('sent_at', { referencedTable: 'line_messages', ascending: false }).order('id', { referencedTable: 'line_messages', ascending: false })
         .limit(1, { referencedTable: 'line_messages' }).range(page * 25, page * 25 + 24);
@@ -31,9 +31,9 @@ export async function GET(request:Request) {
       queryRes,
       database().from('line_inbox_state').select('verified_at,message_at').eq('id', true).maybeSingle(),
     ]);
-    if (error || state.error) throw error || state.error;
-    const profilesToRefresh = new Set(data.filter(c=>!c.profile_updated_at || Date.now()-Date.parse(c.profile_updated_at)>86400000).slice(0,5).map(c=>c.id));
-    const conversations = await Promise.all((data as (Conversation & {profile_updated_at:string|null;line_messages:ChatMessage[]})[]).map(async c => {
+    const rawRows = ((data || []) as unknown) as (Conversation & {profile_updated_at:string|null;line_messages:ChatMessage[]})[];
+    const profilesToRefresh = new Set(rawRows.filter(c=>!c.profile_updated_at || Date.now()-Date.parse(c.profile_updated_at)>86400000).slice(0,5).map(c=>c.id));
+    const conversations = await Promise.all(rawRows.map(async c => {
       const {line_messages,...contact}=c;
       const profile=profilesToRefresh.has(c.id) ? await refreshLineProfile(c) : null;
       return {...contact,...profile,preview:line_messages[0] ? messageLabel(line_messages[0]).slice(0,120) : ''};
